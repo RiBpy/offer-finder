@@ -1,0 +1,312 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import OfferCard, { OfferCardSkeleton } from "@/components/OfferCard";
+import LocationPicker, { requestBrowserLocation } from "@/components/LocationPicker";
+import { CategoryNav, DEFAULT_FILTERS, FilterBar, isDefaultFilters } from "@/components/Filters";
+import { Logo, BottomNav } from "@/components/SiteChrome";
+import { useStoredState, useToday } from "@/components/hooks";
+import { categoryLabel } from "@/lib/constants";
+
+const PAGE_SIZE = 12;
+
+function buildParams({ location, filters, tz, date }) {
+  const p = new URLSearchParams({ tz, date });
+  if (location?.lat != null) p.set("lat", location.lat), p.set("lng", location.lng);
+  if (location?.city) p.set("city", location.city);
+  if (location?.country) p.set("country", location.country);
+  let radius = filters.radius;
+  if (location?.lat == null) radius = location?.city ? "city" : "25";
+  if (radius === "city" && !location?.city) radius = "25";
+  if (radius === "country" && !location?.country) radius = "25";
+  p.set("radius", radius);
+  if (!filters.national) p.set("national", "0");
+  if (filters.unverified) p.set("unverified", "1");
+  if (filters.validity !== "today") p.set("validity", filters.validity);
+  if (filters.validity === "custom") {
+    if (filters.from) p.set("from", filters.from);
+    if (filters.to) p.set("to", filters.to);
+  }
+  for (const k of ["q", "category", "brand", "sourceType", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
+  if (filters.availability !== "any") p.set("availability", filters.availability);
+  if (filters.brandOnly) p.set("section", "brand");
+  let sort = filters.sort;
+  if (sort === "nearest" && location?.lat == null) sort = "newest";
+  p.set("sort", sort);
+  return p;
+}
+
+async function fetchOffers(params, signal) {
+  const r = await fetch(`/api/offers?${params}`, { signal });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const detail = data.fields ? Object.values(data.fields).join(" ") : data.error;
+    throw new Error(detail || "Could not load offers");
+  }
+  return data;
+}
+
+function Section({ title, subtitle, params, extra }) {
+  const [state, setState] = useState({ loading: true, items: [] });
+  const key = params ? `${params}&${extra}` : null;
+  useEffect(() => {
+    if (!key) return;
+    const ctrl = new AbortController();
+    setState((s) => ({ ...s, loading: true }));
+    fetchOffers(new URLSearchParams(key), ctrl.signal)
+      .then((d) => setState({ loading: false, items: d.items }))
+      .catch((e) => e.name !== "AbortError" && setState({ loading: false, items: [] }));
+    return () => ctrl.abort();
+  }, [key]);
+  if (!state.loading && state.items.length === 0) return null;
+  return (
+    <section aria-label={title} className="space-y-3">
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+        {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
+      </div>
+      <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2">
+        {state.loading
+          ? [0, 1, 2, 3].map((i) => <OfferCardSkeleton key={i} compact />)
+          : state.items.map((o) => <OfferCard key={o.id} offer={o} compact />)}
+      </div>
+    </section>
+  );
+}
+
+export default function HomeClient() {
+  const { tz, date } = useToday();
+  const [location, setLocation, locationLoaded] = useStoredState("of.location", null);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerMessage, setPickerMessage] = useState(null);
+  const [locating, setLocating] = useState(false);
+  const [geoAttempted, setGeoAttempted] = useState(false);
+  const [feed, setFeed] = useState({ status: "idle", items: [], total: 0, page: 1, hasMore: false, error: null });
+  const [searchText, setSearchText] = useState("");
+  const autoTried = useRef(false);
+
+  // First visit: explain and ask for the browser location; fall back to manual choice.
+  useEffect(() => {
+    if (!locationLoaded || autoTried.current) return;
+    autoTried.current = true;
+    if (new URLSearchParams(window.location.search).get("location") === "1") {
+      window.history.replaceState(null, "", "/");
+      setPickerOpen(true);
+    }
+    if (location) {
+      setGeoAttempted(true);
+      return;
+    }
+    setLocating(true);
+    requestBrowserLocation()
+      .then((loc) => setLocation(loc))
+      .catch((e) => {
+        setPickerMessage(e.message);
+        setPickerOpen(true);
+      })
+      .finally(() => {
+        setLocating(false);
+        setGeoAttempted(true);
+      });
+  }, [locationLoaded, location, setLocation]);
+
+  // Debounce the search box into filters.
+  useEffect(() => {
+    const t = setTimeout(() => setFilters((f) => (f.q === searchText ? f : { ...f, q: searchText })), 300);
+    return () => clearTimeout(t);
+  }, [searchText]);
+
+  const ready = Boolean(tz && date && geoAttempted);
+  const baseParams = useMemo(() => (ready ? buildParams({ location, filters, tz, date }) : null), [ready, location, filters, tz, date]);
+  const paramsKey = baseParams?.toString();
+
+  const load = useCallback(
+    async (page, signal) => {
+      const p = new URLSearchParams(paramsKey);
+      p.set("page", String(page));
+      p.set("limit", String(PAGE_SIZE));
+      setFeed((f) => ({ ...f, status: page === 1 ? "loading" : "loading-more", error: null }));
+      try {
+        const d = await fetchOffers(p, signal);
+        setFeed((f) => ({ status: "done", items: page === 1 ? d.items : [...f.items, ...d.items], total: d.total, page, hasMore: d.hasMore, error: null }));
+      } catch (e) {
+        if (e.name !== "AbortError") setFeed((f) => ({ ...f, status: "error", error: e.message }));
+      }
+    },
+    [paramsKey],
+  );
+
+  useEffect(() => {
+    if (!paramsKey) return;
+    const ctrl = new AbortController();
+    load(1, ctrl.signal);
+    return () => ctrl.abort();
+  }, [paramsKey, load]);
+
+  const selectLocation = (loc) => {
+    setLocation(loc);
+    setPickerOpen(false);
+    setPickerMessage(null);
+    if (loc.lat == null) setFilters((f) => ({ ...f, radius: "city" }));
+    else if (filters.radius === "city" && !loc.city) setFilters((f) => ({ ...f, radius: "25" }));
+  };
+
+  const showSections = isDefaultFilters(filters);
+  const sectionBase = useMemo(() => {
+    if (!baseParams) return null;
+    const p = new URLSearchParams(baseParams);
+    p.delete("sort");
+    p.set("limit", "10");
+    return p.toString();
+  }, [baseParams]);
+
+  const todayLabel = date
+    ? new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long", timeZone: tz }).format(new Date())
+    : "";
+
+  const feedTitle = filters.brandOnly ? "Brand offers" : filters.category ? categoryLabel(filters.category) : "All verified offers";
+
+  return (
+    <>
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
+          <Logo />
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm hover:bg-slate-100 sm:max-w-xs"
+            aria-label={`Change location. Current: ${location?.label || "not set"}`}
+          >
+            <span aria-hidden="true">📍</span>
+            <span className="truncate font-medium text-slate-800">{locating ? "Finding your location…" : location?.label || "Choose location"}</span>
+            <span aria-hidden="true" className="text-slate-400">▾</span>
+          </button>
+          <form role="search" onSubmit={(e) => e.preventDefault()} className="order-last w-full sm:order-none sm:ml-auto sm:w-80">
+            <label htmlFor="q" className="sr-only">Search offers</label>
+            <input
+              id="q"
+              type="search"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search offers, brands, shops…"
+              className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            />
+          </form>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-5 pb-24 sm:pb-8">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              Offers {location?.city ? `in ${location.city}` : location ? "near you" : ""} today
+            </h1>
+            <p className="text-sm text-slate-500">
+              {todayLabel}
+              {tz && <span className="text-slate-400"> · {tz}</span>}
+            </p>
+          </div>
+          {!location && geoAttempted && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <span>Choose a location to see offers near you. Until then, only nationwide and online offers are shown.</span>
+              <button type="button" onClick={() => setPickerOpen(true)} className="rounded-lg bg-amber-900 px-3 py-1.5 font-medium text-white">
+                Choose location
+              </button>
+            </div>
+          )}
+          {locating && !location && (
+            <p className="rounded-xl bg-slate-100 p-4 text-sm text-slate-700" role="status">
+              Your browser may ask for permission to share your location. We use it only to find nearby offers and never store it on our servers.
+            </p>
+          )}
+          <CategoryNav filters={filters} setFilters={setFilters} />
+          <FilterBar filters={filters} setFilters={setFilters} hasCoords={location?.lat != null} hasCity={Boolean(location?.city)} />
+        </div>
+
+        {showSections && sectionBase && (
+          <div className="space-y-8">
+            <Section title="Brand Offers" subtitle="Brand-wide sales and campaigns" params={sectionBase} extra="section=brand" />
+            {location?.lat != null && <Section title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" />}
+            <Section title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" />
+            <Section title="Recently Added" params={sectionBase} extra="section=recent" />
+          </div>
+        )}
+
+        <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
+            {feed.status === "done" && <p className="text-sm text-slate-500">{feed.total} {feed.total === 1 ? "offer" : "offers"}</p>}
+          </div>
+
+          {feed.status === "error" && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+              {feed.error}{" "}
+              <button type="button" className="font-semibold underline" onClick={() => load(1)}>
+                Try again
+              </button>
+            </div>
+          )}
+
+          {(feed.status === "loading" || feed.status === "idle") && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <OfferCardSkeleton key={i} />
+              ))}
+            </div>
+          )}
+
+          {feed.status !== "loading" && feed.status !== "idle" && feed.items.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {feed.items.map((o) => (
+                <OfferCard key={o.id} offer={o} />
+              ))}
+            </div>
+          )}
+
+          {feed.status === "done" && feed.items.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+              <p className="font-medium text-slate-800">
+                {location ? "No verified offers found in this area today." : "No verified nationwide or online offers right now."}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Try expanding your search radius, selecting another category, or clearing filters.
+              </p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {!isDefaultFilters(filters) && (
+                  <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, radius: filters.radius })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+                    Clear all filters
+                  </button>
+                )}
+                {location?.lat != null && filters.radius !== "country" && (
+                  <button type="button" onClick={() => setFilters((f) => ({ ...f, radius: "50" }))} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+                    Search within 50 km
+                  </button>
+                )}
+                <button type="button" onClick={() => setPickerOpen(true)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+                  Change location
+                </button>
+              </div>
+            </div>
+          )}
+
+          {feed.hasMore && feed.status !== "loading" && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                disabled={feed.status === "loading-more"}
+                onClick={() => load(feed.page + 1)}
+                className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60"
+              >
+                {feed.status === "loading-more" ? "Loading…" : "Load more offers"}
+              </button>
+            </div>
+          )}
+        </section>
+      </main>
+
+      <LocationPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={selectLocation} current={location} message={pickerMessage} />
+      <BottomNav active="home" />
+    </>
+  );
+}
