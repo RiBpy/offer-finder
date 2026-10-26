@@ -125,7 +125,7 @@ MongoDB is reachable.
 3. Set environment variables in Vercel → Settings → Environment Variables: everything in
    `.env.example` except `FETCH_ALLOW_PRIVATE_HOSTS` (never set that in production).
    Set `NEXT_PUBLIC_SITE_URL` to your production URL.
-4. Deploy. `vercel.json` registers a daily cron at 03:00 UTC calling
+4. Deploy. (Netlify: see [docs/DEPLOY-NETLIFY.md](docs/DEPLOY-NETLIFY.md).) `vercel.json` registers a daily cron at 03:00 UTC calling
    `/api/cron/revalidate`; Vercel sends `CRON_SECRET` automatically. On Pro you can
    make it more frequent.
 5. Run `npm run db:init` once against the production database (or just open the site:
