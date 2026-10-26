@@ -3,3 +3,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # MONGODB_DB is only the database name, not a credential. Its value also
+  # appears in package.json, the docs and the server bundle, which made
+  # Netlify's secrets scanner fail the build. MONGODB_URI is still scanned.
+  SECRETS_SCAN_OMIT_KEYS = "MONGODB_DB"
