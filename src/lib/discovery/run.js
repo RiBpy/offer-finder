@@ -184,6 +184,7 @@ export async function processQueue(db, { deadline, maxItems = 50 } = {}) {
           { $set: { status: "queued" }, $inc: { attempts: -1 }, $unset: { startedAt: "" } },
         );
         summary.aiError = aiErrorMessage(err);
+        summary.aiStatus = err.status ?? null;
         log.error("discovery stopped: AI API rejected the request", { model: aiModel(), status: err.status, error: summary.aiError });
         break;
       }
