@@ -5,7 +5,7 @@ import OfferCard, { OfferCardSkeleton } from "@/components/OfferCard";
 import LocationPicker, { requestBrowserLocation } from "@/components/LocationPicker";
 import { CategoryNav, DEFAULT_FILTERS, FilterBar, isDefaultFilters } from "@/components/Filters";
 import { Logo, BottomNav } from "@/components/SiteChrome";
-import { useStoredState, useToday } from "@/components/hooks";
+import { useDragScroll, useStoredState, useToday } from "@/components/hooks";
 import { categoryLabel } from "@/lib/constants";
 
 const PAGE_SIZE = 12;
@@ -48,6 +48,7 @@ async function fetchOffers(params, signal) {
 
 function Section({ title, subtitle, params, extra }) {
   const [state, setState] = useState({ loading: true, items: [] });
+  const rowRef = useDragScroll();
   const key = params ? `${params}&${extra}` : null;
   useEffect(() => {
     if (!key) return;
@@ -65,9 +66,9 @@ function Section({ title, subtitle, params, extra }) {
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
         {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
       </div>
-      <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2">
+      <div ref={rowRef} className="no-scrollbar -mx-4 flex cursor-grab snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2">
         {state.loading
-          ? [0, 1, 2, 3].map((i) => <OfferCardSkeleton key={i} compact />)
+          ? [0, 1, 2, 3, 4].map((i) => <OfferCardSkeleton key={i} index={i} compact />)
           : state.items.map((o) => <OfferCard key={o.id} offer={o} compact />)}
       </div>
     </section>
@@ -85,6 +86,10 @@ export default function HomeClient() {
   const [feed, setFeed] = useState({ status: "idle", items: [], total: 0, page: 1, hasMore: false, error: null });
   const [searchText, setSearchText] = useState("");
   const autoTried = useRef(false);
+  // Discovery runs on page load (the server applies a shared cooldown).
+  const [discovery, setDiscovery] = useState({ status: "idle", found: 0 });
+  const [reloadToken, setReloadToken] = useState(0);
+  const discoveryStarted = useRef(false);
 
   // First visit: explain and ask for the browser location; fall back to manual choice.
   useEffect(() => {
@@ -122,11 +127,11 @@ export default function HomeClient() {
   const paramsKey = baseParams?.toString();
 
   const load = useCallback(
-    async (page, signal) => {
+    async (page, signal, { silent = false } = {}) => {
       const p = new URLSearchParams(paramsKey);
       p.set("page", String(page));
       p.set("limit", String(PAGE_SIZE));
-      setFeed((f) => ({ ...f, status: page === 1 ? "loading" : "loading-more", error: null }));
+      if (!silent) setFeed((f) => ({ ...f, status: page === 1 ? "loading" : "loading-more", error: null }));
       try {
         const d = await fetchOffers(p, signal);
         setFeed((f) => ({ status: "done", items: page === 1 ? d.items : [...f.items, ...d.items], total: d.total, page, hasMore: d.hasMore, error: null }));
@@ -143,6 +148,32 @@ export default function HomeClient() {
     load(1, ctrl.signal);
     return () => ctrl.abort();
   }, [paramsKey, load]);
+
+  // Once per page load, ask the server to look for new offers. It returns at
+  // once if another visitor triggered a check recently.
+  useEffect(() => {
+    if (!ready || discoveryStarted.current) return;
+    discoveryStarted.current = true;
+    setDiscovery({ status: "checking", found: 0 });
+    fetch("/api/discover/refresh", { method: "POST" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const found = d?.published || 0;
+        setDiscovery({ status: "done", found });
+        if (found) setReloadToken((t) => t + 1);
+      })
+      .catch(() => setDiscovery({ status: "done", found: 0 }));
+  }, [ready]);
+
+  // New offers were published: refresh the list in place, without skeletons.
+  useEffect(() => {
+    if (!reloadToken || !paramsKey) return;
+    const ctrl = new AbortController();
+    load(1, ctrl.signal, { silent: true });
+    return () => ctrl.abort();
+    // Only reload when discovery reports new offers.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadToken]);
 
   const selectLocation = (loc) => {
     setLocation(loc);
@@ -226,17 +257,32 @@ export default function HomeClient() {
 
         {showSections && sectionBase && (
           <div className="space-y-8">
-            <Section title="Brand Offers" subtitle="Brand-wide sales and campaigns" params={sectionBase} extra="section=brand" />
-            {location?.lat != null && <Section title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" />}
-            <Section title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" />
-            <Section title="Recently Added" params={sectionBase} extra="section=recent" />
+            <Section key={`brand-${reloadToken}`} title="Brand Offers" subtitle="Brand-wide sales and campaigns" params={sectionBase} extra="section=brand" />
+            {location?.lat != null && (
+              <Section key={`near-${reloadToken}`} title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" />
+            )}
+            <Section key={`ending-${reloadToken}`} title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" />
+            <Section key={`recent-${reloadToken}`} title="Recently Added" params={sectionBase} extra="section=recent" />
           </div>
         )}
 
         <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="space-y-4">
-          <div className="flex items-baseline justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
-            {feed.status === "done" && <p className="text-sm text-slate-500">{feed.total} {feed.total === 1 ? "offer" : "offers"}</p>}
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              {discovery.status === "checking" && (
+                <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
+                  <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
+                  Checking for new offers…
+                </span>
+              )}
+              {discovery.status === "done" && discovery.found > 0 && (
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
+                  ✓ {discovery.found} new {discovery.found === 1 ? "offer" : "offers"} found
+                </span>
+              )}
+              {feed.status === "done" && <span>{feed.total} {feed.total === 1 ? "offer" : "offers"}</span>}
+            </div>
           </div>
 
           {feed.status === "error" && (
@@ -249,15 +295,15 @@ export default function HomeClient() {
           )}
 
           {(feed.status === "loading" || feed.status === "idle") && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <OfferCardSkeleton key={i} />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <OfferCardSkeleton key={i} index={i} />
               ))}
             </div>
           )}
 
           {feed.status !== "loading" && feed.status !== "idle" && feed.items.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {feed.items.map((o) => (
                 <OfferCard key={o.id} offer={o} />
               ))}

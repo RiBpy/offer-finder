@@ -61,6 +61,76 @@ export function useBookmarks() {
   return { ids, has: (id) => ids.includes(id), toggle, loaded };
 }
 
+/**
+ * Lets a mouse drag a horizontally scrolling row (touch already scrolls
+ * natively). Scroll snapping is paused while dragging, and the click that ends
+ * a drag is swallowed so it does not open a card or toggle a chip.
+ */
+export function useDragScroll() {
+  // A callback ref (with React 19 cleanup) so rows that mount later still attach.
+  return useCallback((el) => {
+    if (!el) return;
+    let startX = 0;
+    let startLeft = 0;
+    let pointerId = null;
+    let dragged = false;
+
+    const down = (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0 || el.scrollWidth <= el.clientWidth) return;
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      startLeft = el.scrollLeft;
+      dragged = false;
+    };
+    const move = (e) => {
+      if (e.pointerId !== pointerId) return;
+      const dx = e.clientX - startX;
+      if (!dragged && Math.abs(dx) < 5) return;
+      if (!dragged) {
+        dragged = true;
+        el.setPointerCapture(pointerId);
+        el.style.scrollSnapType = "none";
+        el.style.cursor = "grabbing";
+        el.style.userSelect = "none";
+      }
+      el.scrollLeft = startLeft - dx;
+    };
+    const up = (e) => {
+      if (e.pointerId !== pointerId) return;
+      pointerId = null;
+      el.style.cursor = "";
+      el.style.userSelect = "";
+      if (dragged) {
+        // Restore snapping from the current position so the row settles on a card.
+        el.style.scrollSnapType = "";
+      }
+    };
+    const click = (e) => {
+      if (dragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragged = false;
+      }
+    };
+    const dragStart = (e) => e.preventDefault(); // links and images would start a native drag
+
+    el.addEventListener("pointerdown", down);
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointercancel", up);
+    el.addEventListener("click", click, true);
+    el.addEventListener("dragstart", dragStart);
+    return () => {
+      el.removeEventListener("pointerdown", down);
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerup", up);
+      el.removeEventListener("pointercancel", up);
+      el.removeEventListener("click", click, true);
+      el.removeEventListener("dragstart", dragStart);
+    };
+  }, []);
+}
+
 const subscribeNoop = () => () => {};
 
 // Browser timezone and today's date, computed on the client only.

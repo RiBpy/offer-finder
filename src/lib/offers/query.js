@@ -189,7 +189,9 @@ function attributeFilters(p, now) {
     const re = new RegExp(escapeRegex(p.q), "i");
     and.push({ $or: [{ title: re }, { brandName: re }, { businessName: re }, { description: re }, { tags: re }] });
   }
-  if (p.category) and.push({ primaryCategory: p.category });
+  // `categories` always contains the primary one, so a hotel buffet tagged
+  // food + hotels shows under both.
+  if (p.category) and.push({ categories: p.category });
   if (p.brandKey) and.push({ brandKey: p.brandKey });
   if (p.sourceType) and.push({ sourceType: p.sourceType });
   if (p.availability === "online") and.push({ availabilityType: { $in: ["online", "both"] } });

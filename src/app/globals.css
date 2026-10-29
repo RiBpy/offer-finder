@@ -28,26 +28,56 @@ body {
   outline-offset: 2px;
 }
 
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
+/* Loading placeholders. The highlight is fixed to the viewport, so every
+   placeholder on screen shares one sweeping wave instead of flickering apart. */
+@keyframes skeleton-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
   }
 }
 .skeleton {
-  position: relative;
-  overflow: hidden;
-  background: #e2e8f0;
+  background-color: #e8edf3;
+  background-image: linear-gradient(100deg, #e8edf3 30%, #f6f9fc 45%, #ecfdf5 50%, #f6f9fc 55%, #e8edf3 70%);
+  background-size: 200% 100%;
+  background-attachment: fixed;
+  animation: skeleton-sweep 1.6s linear infinite;
 }
-.skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  animation: shimmer 1.4s infinite;
+
+/* Placeholder cards rise in one after another (set --i on each). */
+@keyframes skeleton-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
+.skeleton-card {
+  animation: skeleton-rise 0.45s ease-out both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* Small pulsing dot for "checking for new offers". */
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+.live-dot {
+  animation: live-dot 1.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .skeleton::after {
+  .skeleton,
+  .skeleton-card,
+  .live-dot {
     animation: none;
   }
 }

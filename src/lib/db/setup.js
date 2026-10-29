@@ -72,7 +72,7 @@ export const offerValidator = {
           required: ["at", "method"],
           properties: {
             at: { bsonType: "date" },
-            method: { enum: ["admin", "structured_data", "source_check"] },
+            method: { enum: ["admin", "structured_data", "source_check", "auto_extract"] },
             note: nullable("string"),
           },
         },
@@ -130,6 +130,9 @@ export async function ensureCollections(db) {
   await ensureCollection(db, "offers", { validator: offerValidator, validationLevel: "moderate" });
   await ensureCollection(db, "sources");
   await ensureCollection(db, "jobs");
+  await ensureCollection(db, "discovery_items");
+  await ensureCollection(db, "geocache");
+  await ensureCollection(db, "discovery_state");
 
   const offers = db.collection("offers");
   await offers.createIndexes([
@@ -146,6 +149,7 @@ export async function ensureCollections(db) {
     { key: { geo: "2dsphere" }, name: "geo_2dsphere" },
     { key: { validationStatus: 1, reviewState: 1, endDate: 1 }, name: "status_end" },
     { key: { primaryCategory: 1, validationStatus: 1, endDate: 1 }, name: "category_status_end" },
+    { key: { categories: 1, validationStatus: 1, endDate: 1 }, name: "categories_status_end" },
     { key: { brandKey: 1, validationStatus: 1 }, name: "brand_status" },
     { key: { country: 1, scope: 1, cityKey: 1 }, name: "country_scope_city" },
     { key: { startDate: 1 }, name: "start_date" },
@@ -159,5 +163,10 @@ export async function ensureCollections(db) {
   await db.collection("jobs").createIndexes([
     { key: { status: 1, createdAt: -1 }, name: "status_created" },
     { key: { offerId: 1, createdAt: -1 }, name: "offer_created" },
+  ]);
+  // Discovery queue: one document per candidate URL (_id is the canonical URL).
+  await db.collection("discovery_items").createIndexes([
+    { key: { status: 1, priority: -1, foundAt: 1 }, name: "queue" },
+    { key: { foundAt: 1 }, name: "found_ttl", expireAfterSeconds: 120 * 24 * 3600 },
   ]);
 }

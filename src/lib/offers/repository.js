@@ -24,7 +24,7 @@ function evidenceEntry(method, note, now) {
   return { at: now, method, note: note || null };
 }
 
-export async function createOffer(db, input, { now = new Date(), actor = "admin" } = {}) {
+export async function createOffer(db, input, { now = new Date(), actor = "admin", method = "admin" } = {}) {
   const { fields, geo, evidenceNote } = normalizeOfferInput(input, { now });
   const _id = new ObjectId();
   const doc = {
@@ -32,7 +32,7 @@ export async function createOffer(db, input, { now = new Date(), actor = "admin"
     ...fields,
     slug: makeSlug(fields.title, _id),
     ...(geo ? { geo } : {}),
-    verificationEvidence: evidenceNote ? [evidenceEntry("admin", `${evidenceNote} (by ${actor})`, now)] : [],
+    verificationEvidence: evidenceNote ? [evidenceEntry(method, `${evidenceNote} (by ${actor})`, now)] : [],
     lastVerifiedAt: fields.validationStatus === "active" ? now : null,
     lastCheckedAt: null,
     statusReason: null,

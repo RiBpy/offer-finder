@@ -23,9 +23,9 @@ export default function SavedClient() {
 
   if (state.loading)
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {[0, 1, 2].map((i) => (
-          <OfferCardSkeleton key={i} />
+          <OfferCardSkeleton key={i} index={i} />
         ))}
       </div>
     );
@@ -43,7 +43,7 @@ export default function SavedClient() {
   const inactive = state.items.filter((o) => o.effectiveStatus !== "active");
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {active.map((o) => (
           <OfferCard key={o.id} offer={o} />
         ))}
@@ -51,7 +51,7 @@ export default function SavedClient() {
       {inactive.length > 0 && (
         <section>
           <h2 className="mb-3 font-semibold text-slate-700">No longer active</h2>
-          <div className="grid gap-4 opacity-70 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 opacity-70 md:grid-cols-3 lg:grid-cols-4">
             {inactive.map((o) => (
               <OfferCard key={o.id} offer={{ ...o, validationStatus: o.effectiveStatus }} />
             ))}

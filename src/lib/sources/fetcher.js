@@ -172,14 +172,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * Fetches a source page politely. Returns { status, url, body, headers }.
  * Throws FetchError with code ROBOTS_DISALLOWED when robots.txt forbids it.
  */
-export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeoutMs } = {}) {
+export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeoutMs, accept } = {}) {
   if (!(await robotsAllows(url))) {
     throw new FetchError("robots.txt disallows fetching this URL", { code: "ROBOTS_DISALLOWED" });
   }
   let attempt = 0;
   for (;;) {
     try {
-      const res = await rawFetch(url, { timeoutMs });
+      const res = await rawFetch(url, { timeoutMs, ...(accept ? { accept } : {}) });
       if ((res.status >= 500 || res.status === 429) && attempt < retries) throw new FetchError(`HTTP ${res.status}`, { status: res.status, retryable: true });
       return res;
     } catch (err) {
