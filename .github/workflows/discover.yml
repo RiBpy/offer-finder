@@ -1,7 +1,8 @@
 # Reads queued offer pages every hour with `npm run discover`, without the
 # serverless time limit that keeps visit-triggered runs to a few pages.
 # Needs repository secrets MONGODB_URI and GEMINI_API_KEY (or ANTHROPIC_API_KEY);
-# the other values are optional. MongoDB Atlas must allow access from anywhere
+# the other values are optional (GEMINI_API_KEY_2 is used when the first key's
+# models are busy). MongoDB Atlas must allow access from anywhere
 # (0.0.0.0/0), because GitHub runners have no fixed IP.
 
 name: Discover offers
@@ -41,8 +42,10 @@ jobs:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB: ${{ secrets.MONGODB_DB }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           OFFER_AI_MODEL: ${{ vars.OFFER_AI_MODEL }}
+          OFFER_AI_FALLBACK_MODELS: ${{ vars.OFFER_AI_FALLBACK_MODELS }}
           AI_MIN_INTERVAL_MS: ${{ vars.AI_MIN_INTERVAL_MS }}
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}

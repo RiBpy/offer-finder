@@ -4,6 +4,7 @@
 //
 // Provider: Google Gemini when GEMINI_API_KEY is set, otherwise Anthropic
 // Claude when ANTHROPIC_API_KEY is set. AI_PROVIDER=gemini|anthropic forces one.
+// Gemini falls back across models and a second key (GEMINI_API_KEY_2) when busy.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -128,18 +129,59 @@ function userPrompt({ url, title, text, publishedAt, today, region }) {
 
 // --- Gemini -------------------------------------------------------------------
 
-let gemini;
 // Gemini takes a plain JSON Schema; drop the $schema marker zod adds.
 const { $schema, ...GEMINI_SCHEMA } = z.toJSONSchema(ResultSchema);
 
+// Free models are often "experiencing high demand" one at a time, and each key
+// has its own rate limits, so a busy model or key falls through to the next.
+// OFFER_AI_FALLBACK_MODELS (comma-separated) replaces the default fallbacks.
+const DEFAULT_GEMINI_FALLBACKS = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-flash-latest"];
+
+function geminiKeys() {
+  return [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2].filter(Boolean);
+}
+
+function geminiModels() {
+  const fallbacks = process.env.OFFER_AI_FALLBACK_MODELS
+    ? process.env.OFFER_AI_FALLBACK_MODELS.split(",").map((m) => m.trim()).filter(Boolean)
+    : DEFAULT_GEMINI_FALLBACKS;
+  return [...new Set([aiModel(), ...fallbacks])];
+}
+
+/** Errors that say this model or key can't take the request now, not that the page is bad. */
+function geminiShouldTryNext(err) {
+  if (err instanceof GeminiApiError) return [401, 403, 404, 429, 500, 502, 503, 504].includes(err.status);
+  return err?.name === "AbortError" || err?.name === "TimeoutError";
+}
+
+const geminiClients = new Map();
+
+function geminiClient(apiKey) {
+  if (!geminiClients.has(apiKey)) {
+    // No SDK retries: a busy model is skipped for the next model or key instead.
+    geminiClients.set(apiKey, new GoogleGenAI({ apiKey, httpOptions: { timeout: 45_000, retryOptions: { attempts: 1 } } }));
+  }
+  return geminiClients.get(apiKey);
+}
+
 async function extractWithGemini(page) {
-  // One quick retry only: an overloaded model is handled by re-queuing the page.
-  gemini ??= new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
-    httpOptions: { timeout: 60_000, retryOptions: { attempts: 2, maxDelay: 5 } },
-  });
-  const response = await gemini.models.generateContent({
-    model: aiModel(),
+  let lastErr;
+  for (const model of geminiModels()) {
+    for (const apiKey of geminiKeys()) {
+      try {
+        return await extractWithGeminiModel(page, model, apiKey);
+      } catch (err) {
+        if (!geminiShouldTryNext(err)) throw err;
+        lastErr = err;
+      }
+    }
+  }
+  throw lastErr;
+}
+
+async function extractWithGeminiModel(page, model, apiKey) {
+  const response = await geminiClient(apiKey).models.generateContent({
+    model,
     contents: userPrompt(page),
     config: {
       systemInstruction: SYSTEM,
@@ -164,7 +206,7 @@ async function extractWithGemini(page) {
   }
   const parsed = ResultSchema.safeParse(data);
   if (!parsed.success) throw new Error(`Gemini output did not match the schema: ${parsed.error.issues[0]?.message}`);
-  return { offers: parsed.data.offers, usage, refused: false };
+  return { offers: parsed.data.offers, usage, refused: false, model };
 }
 
 // --- Anthropic ----------------------------------------------------------------
@@ -185,7 +227,7 @@ async function extractWithClaude(page) {
 }
 
 /**
- * @returns {Promise<{ offers: object[], usage: { input_tokens, output_tokens }|null, refused: boolean }>}
+ * @returns {Promise<{ offers: object[], usage: { input_tokens, output_tokens }|null, refused: boolean, model?: string }>}
  */
 export async function extractOffersWithAi(page) {
   return paced(() => (aiProvider() === "gemini" ? extractWithGemini(page) : extractWithClaude(page)));
