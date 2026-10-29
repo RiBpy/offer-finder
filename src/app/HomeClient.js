@@ -27,7 +27,7 @@ function buildParams({ location, filters, tz, date }) {
     if (filters.from) p.set("from", filters.from);
     if (filters.to) p.set("to", filters.to);
   }
-  for (const k of ["q", "category", "brand", "sourceType", "bank", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
+  for (const k of ["q", "category", "sourceType", "bank", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
   if (filters.availability !== "any") p.set("availability", filters.availability);
   if (filters.brandOnly) p.set("section", "brand");
   let sort = filters.sort;

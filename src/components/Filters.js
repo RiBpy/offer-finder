@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BANKS, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, VALIDITY_MODES } from "@/lib/constants";
 import { useDragScroll } from "./hooks";
 
@@ -14,7 +14,6 @@ export const DEFAULT_FILTERS = {
   radius: "25",
   national: true,
   availability: "any",
-  brand: "",
   sourceType: "",
   bank: "",
   minDiscount: "",
@@ -83,23 +82,14 @@ function ClearableSelect({ value, defaultValue = "", onClear, label, className =
 
 export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
   const [open, setOpen] = useState(false);
-  const [brands, setBrands] = useState([]);
   const set = (k) => (e) => {
     const v = e.target.type === "checkbox" ? e.target.checked : e.target.value;
     setFilters((f) => ({ ...f, [k]: v }));
   };
   const clear = (...keys) => () => setFilters((f) => ({ ...f, ...Object.fromEntries(keys.map((k) => [k, DEFAULT_FILTERS[k]])) }));
 
-  useEffect(() => {
-    if (!open || brands.length) return;
-    fetch("/api/brands")
-      .then((r) => (r.ok ? r.json() : { brands: [] }))
-      .then((d) => setBrands(d.brands))
-      .catch(() => {});
-  }, [open, brands.length]);
-
   const radiusOptions = RADIUS_OPTIONS.filter((r) => (r.id === "city" ? hasCity : r.id === "country" ? true : hasCoords));
-  const extraCount = ["availability", "brand", "sourceType", "minDiscount"].filter((k) => filters[k] !== DEFAULT_FILTERS[k]).length + (filters.unverified ? 1 : 0) + (filters.national ? 0 : 1);
+  const extraCount = ["availability", "sourceType", "minDiscount"].filter((k) => filters[k] !== DEFAULT_FILTERS[k]).length + (filters.unverified ? 1 : 0) + (filters.national ? 0 : 1);
   // Sits after the last filter: in the first row, or at the end of the open panel.
   const clearAll = !isDefaultFilters(filters) && (
     <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, radius: filters.radius })} className="px-2 py-2 text-sm font-medium text-emerald-700 hover:underline">
@@ -167,17 +157,6 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
               <option value="in_store">In-store</option>
               <option value="online">Available online</option>
               <option value="online_only">Online only</option>
-            </ClearableSelect>
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block font-medium text-slate-700">Brand</span>
-            {/* A select, not a datalist: a datalist only suggests names matching what is typed, so once a brand was picked the others disappeared. */}
-            <ClearableSelect className="w-full" label="brand" value={filters.brand} onChange={set("brand")} onClear={clear("brand")}>
-              <option value="">Any brand</option>
-              {filters.brand && !brands.includes(filters.brand) && <option value={filters.brand}>{filters.brand}</option>}
-              {brands.map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
             </ClearableSelect>
           </label>
           <label className="text-sm">
