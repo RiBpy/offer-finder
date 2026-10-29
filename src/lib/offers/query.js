@@ -198,7 +198,11 @@ function attributeFilters(p, now) {
   if (p.category) and.push({ categories: p.category });
   if (p.brandKey) and.push({ brandKey: p.brandKey });
   if (p.sourceType) and.push({ sourceType: p.sourceType });
-  if (p.bank) and.push({ sourceName: BANKS.find((b) => b.id === p.bank).sourceName });
+  if (p.bank) {
+    const bank = BANKS.find((b) => b.id === p.bank);
+    const named = new RegExp(`\\b(${bank.names.map(escapeRegex).join("|")})\\b`, "i");
+    and.push({ $or: [{ sourceName: bank.sourceName }, { title: named }] });
+  }
   if (p.availability === "online") and.push({ availabilityType: { $in: ["online", "both"] } });
   if (p.availability === "online_only") and.push({ availabilityType: "online" });
   if (p.availability === "in_store") and.push({ availabilityType: { $in: ["in_store", "both"] } });

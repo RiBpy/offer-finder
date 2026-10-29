@@ -10,7 +10,7 @@
 //             sitemap + sitemapPattern sitemap (or index); matching URL paths are queued
 //             pages                    pages that themselves list many offers
 //             recheckDays              re-read already processed pages after N days
-//             adapter                  site-specific reader (only "ebl", see ebl.js)
+//             adapter                  site-specific reader: "ebl" (ebl.js) or "ific" (ific.js)
 //           Only sites that render offers in plain HTML work (no JavaScript is
 //           executed), and robots.txt is always respected.
 
@@ -39,6 +39,10 @@ export const SEARCHES = [
   "ছাড় অফার",
   "মূল্যছাড়",
   "ক্যাশব্যাক অফার",
+  // City Bank lists its offers only in a JavaScript app, so they are found through news.
+  "City Bank Amex offer",
+  "City Bank American Express discount",
+  "IFIC Bank card offer",
 ];
 
 // Words in a URL that mark hotel, dining and other card-offer pages.
@@ -73,6 +77,14 @@ export const SITES = [
     url: "https://www.ebl.com.bd/retail/ebl-discount-partners",
     adapter: "ebl",
     recheckDays: 14,
+  },
+  {
+    // One page lists every IFIC card discount (about 60 merchants), too many
+    // for one AI answer, so each table row is read on its own.
+    name: "IFIC Bank",
+    pages: ["https://ificbank.com.bd/discount-offers"],
+    adapter: "ific",
+    recheckDays: 7,
   },
   {
     name: "LankaBangla Finance",

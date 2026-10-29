@@ -7,6 +7,7 @@ import { politeFetch } from "../sources/fetcher.js";
 import { canonicalizeUrl } from "../dedupe.js";
 import { cleanText } from "../text.js";
 import { eblCandidates } from "./ebl.js";
+import { ificCandidates } from "./ific.js";
 
 const XML_ACCEPT = "application/rss+xml,application/xml,text/xml;q=0.9,*/*;q=0.5";
 
@@ -167,6 +168,7 @@ async function sitemapCandidates(site) {
  */
 export async function fetchSiteCandidates(site) {
   if (site.adapter === "ebl") return eblCandidates(site);
+  if (site.adapter === "ific") return ificCandidates(site);
   const out = [];
   if (site.url && site.linkPattern) out.push(...(await listingCandidates(site)));
   if (site.sitemap && site.sitemapPattern) out.push(...(await sitemapCandidates(site)));

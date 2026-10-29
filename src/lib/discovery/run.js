@@ -14,6 +14,10 @@ import { fetchFeedCandidates, fetchSearchCandidates, fetchSiteCandidates, looksL
 import { aiEnabled, aiErrorMessage, aiModel, extractOffersWithAi, isAiServiceError } from "./ai-extract.js";
 import { publishExtracted } from "./publish.js";
 import { fetchEblPartner } from "./ebl.js";
+import { fetchIficOffer } from "./ific.js";
+
+// Site-specific readers for items whose offer is not a page of its own.
+const ADAPTER_READERS = { ebl: fetchEblPartner, ific: fetchIficOffer };
 
 const COLLECT_EVERY_MS = 3 * 3600 * 1000;
 // Hotel and dining pages are read first: they are the offers people look for most.
@@ -127,9 +131,10 @@ const httpFailure = (status) => ({ status: status === 404 || status === 410 ? "g
  * imageUrl, siteName } }, or { result } when there is nothing to read.
  */
 async function readItem(db, item, now) {
-  if (item.adapter === "ebl") {
-    const p = await fetchEblPartner(item);
-    await recordSourceResult(db, item.url, { ok: p.status < 400, status: p.status, error: p.status >= 400 ? `HTTP ${p.status}` : null, adapter: "ebl", now });
+  const reader = ADAPTER_READERS[item.adapter];
+  if (reader) {
+    const p = await reader(item);
+    await recordSourceResult(db, item.url, { ok: p.status < 400, status: p.status, error: p.status >= 400 ? `HTTP ${p.status}` : null, adapter: item.adapter, now });
     if (p.status >= 400) return { result: httpFailure(p.status) };
     return { page: { url: item.url, title: p.title, text: p.text, publishedAt: p.publishedAt, imageUrl: p.imageUrl, siteName: null } };
   }
