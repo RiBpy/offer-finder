@@ -23,7 +23,7 @@ const STUCK_AFTER_MS = 10 * 60 * 1000;
 
 function allSources() {
   return [
-    ...SITES.map((s) => ({ key: `site:${s.url}`, kind: "site", priority: 2, load: () => fetchSiteCandidates(s) })),
+    ...SITES.map((s) => ({ key: `site:${s.url || s.sitemap || s.pages?.[0]}`, kind: "site", priority: 2, load: () => fetchSiteCandidates(s) })),
     ...FEEDS.map((f) => ({ key: `feed:${f.url}`, kind: "feed", priority: 1, load: () => fetchFeedCandidates(f) })),
     ...SEARCHES.map((q) => ({ key: `search:${q}`, kind: "search", priority: 1, load: () => fetchSearchCandidates(q) })),
   ];

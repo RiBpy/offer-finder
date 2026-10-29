@@ -1,0 +1,48 @@
+# Reads queued offer pages every hour with `npm run discover`, without the
+# serverless time limit that keeps visit-triggered runs to a few pages.
+# Needs repository secrets MONGODB_URI and GEMINI_API_KEY (or ANTHROPIC_API_KEY);
+# the other values are optional. MongoDB Atlas must allow access from anywhere
+# (0.0.0.0/0), because GitHub runners have no fixed IP.
+
+name: Discover offers
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "Pages to read in this run"
+        default: "40"
+      force:
+        description: "Re-check every source now"
+        type: boolean
+        default: false
+
+# Runs share one queue, so never let two overlap.
+concurrency:
+  group: discover
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Discover
+        run: npm run discover -- --max "${{ inputs.max || '40' }}" ${{ inputs.force && '--force' || '' }}
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+          OFFER_AI_MODEL: ${{ vars.OFFER_AI_MODEL }}
+          AI_MIN_INTERVAL_MS: ${{ vars.AI_MIN_INTERVAL_MS }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
