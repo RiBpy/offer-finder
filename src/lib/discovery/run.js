@@ -164,7 +164,7 @@ async function processItem(db, item, now) {
   if (result) return result;
 
   const { url, text, publishedAt } = page;
-  const { offers, usage, refused } = await extractOffersWithAi({
+  const { offers, usage, refused, model } = await extractOffersWithAi({
     url,
     title: page.title,
     text,
@@ -196,6 +196,7 @@ async function processItem(db, item, now) {
     status: refused ? "refused" : offers.length ? "done" : "no_offer",
     outcomes,
     tokens: usage ? { input: usage.input_tokens, output: usage.output_tokens } : null,
+    model,
   };
 }
 
@@ -227,7 +228,7 @@ export async function processQueue(db, { deadline, maxItems = 50 } = {}) {
     }
     await db.collection("discovery_items").updateOne(
       { _id: item._id },
-      { $set: { ...result, processedAt: new Date(), model: aiModel() }, $unset: { startedAt: "" } },
+      { $set: { ...result, processedAt: new Date(), model: result.model ?? aiModel() }, $unset: { startedAt: "" } },
     );
     summary.processed++;
     if (result.status === "failed") summary.failed++;
