@@ -5,6 +5,7 @@ import OfferCard, { OfferCardSkeleton } from "@/components/OfferCard";
 import LocationPicker, { requestBrowserLocation } from "@/components/LocationPicker";
 import { CategoryNav, DEFAULT_FILTERS, FilterBar, isDefaultFilters } from "@/components/Filters";
 import { Logo, BottomNav } from "@/components/SiteChrome";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useDragScroll, useStoredState, useToday } from "@/components/hooks";
 import { categoryLabel } from "@/lib/constants";
 
@@ -69,7 +70,7 @@ function Section({ title, subtitle, params, extra }) {
       <div ref={rowRef} className="no-scrollbar -mx-4 flex cursor-grab snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2">
         {state.loading
           ? [0, 1, 2, 3, 4].map((i) => <OfferCardSkeleton key={i} index={i} compact />)
-          : state.items.map((o) => <OfferCard key={o.id} offer={o} compact />)}
+          : state.items.map((o, i) => <OfferCard key={o.id} offer={o} index={i} compact />)}
       </div>
     </section>
   );
@@ -231,9 +232,10 @@ export default function HomeClient() {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="Search offers, brands, shops…"
-              className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
           </form>
+          <ThemeToggle className="ml-auto sm:ml-0" />
         </div>
       </header>
 
@@ -251,7 +253,7 @@ export default function HomeClient() {
           {!location && geoAttempted && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
               <span>Choose a location to see offers near you. Until then, only nationwide and online offers are shown.</span>
-              <button type="button" onClick={() => setPickerOpen(true)} className="rounded-lg bg-amber-900 px-3 py-1.5 font-medium text-white">
+              <button type="button" onClick={() => setPickerOpen(true)} className="rounded-lg bg-amber-900 px-3 py-1.5 font-medium text-white dark:text-amber-50">
                 Choose location
               </button>
             </div>
@@ -314,8 +316,8 @@ export default function HomeClient() {
 
           {feed.status !== "loading" && feed.status !== "idle" && feed.items.length > 0 && (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-              {feed.items.map((o) => (
-                <OfferCard key={o.id} offer={o} />
+              {feed.items.map((o, i) => (
+                <OfferCard key={o.id} offer={o} index={i % PAGE_SIZE} />
               ))}
             </div>
           )}

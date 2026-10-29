@@ -121,7 +121,7 @@ export default async function OfferPage({ params }) {
               href={offer.sourceUrl}
               target="_blank"
               rel="noopener noreferrer nofollow"
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-800"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-800 active:scale-95 dark:text-slate-50"
             >
               View original offer ↗
             </a>

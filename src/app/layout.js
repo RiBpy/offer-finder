@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +25,12 @@ export const viewport = { themeColor: "#047857" };
 
 export default function RootLayout({ children }) {
   return (
-    // Browser extensions (Grammarly, ColorZilla, …) add attributes to <html>/<body> before hydration.
+    // Browser extensions (Grammarly, ColorZilla, …) add attributes to <html>/<body> before hydration,
+    // and the theme script adds the "dark" class.
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>{children}</body>
     </html>
   );

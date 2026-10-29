@@ -52,7 +52,7 @@ export default function Sources() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Sources &amp; jobs</h1>
-        <button onClick={runNow} disabled={running} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+        <button onClick={runNow} disabled={running} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:text-slate-50">
           {running ? "Running…" : "Run revalidation now"}
         </button>
       </div>

@@ -67,7 +67,7 @@ export default function AdminOffers() {
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${tab === t.id ? "bg-slate-900 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200"}`}
+            className={`rounded-full px-3 py-1.5 text-sm font-medium ${tab === t.id ? "bg-slate-900 text-white dark:text-slate-50" : "bg-white text-slate-700 ring-1 ring-slate-200"}`}
           >
             {t.label}
             {data?.counts?.[t.id] != null && <span className="ml-1.5 opacity-70">{data.counts[t.id]}</span>}

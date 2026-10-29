@@ -44,7 +44,7 @@ export default function NewOffer() {
             placeholder="https://brand.example/campaign/eid-sale"
             className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
           />
-          <button disabled={busy} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+          <button disabled={busy} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:text-slate-50">
             {busy ? "Fetching…" : "Fetch details"}
           </button>
         </div>

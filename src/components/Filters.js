@@ -30,8 +30,8 @@ const select = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm ou
 export function CategoryNav({ filters, setFilters, counts }) {
   const rowRef = useDragScroll();
   const chip = (active) =>
-    `flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${
-      active ? "border-emerald-700 bg-emerald-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+    `flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition duration-200 active:scale-95 ${
+      active ? "border-emerald-700 bg-emerald-700 text-white shadow-md shadow-emerald-700/20" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
     }`;
   const count = (n) => counts && <span className="tabular-nums opacity-70">({n ?? 0})</span>;
   return (
@@ -149,7 +149,7 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
       </div>
 
       {open && (
-        <div id="more-filters" className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div id="more-filters" className="panel-in grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Where to redeem</span>
             <ClearableSelect className="w-full" label="where to redeem" value={filters.availability} defaultValue={DEFAULT_FILTERS.availability} onChange={set("availability")} onClear={clear("availability")}>

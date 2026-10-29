@@ -26,7 +26,7 @@ export function BookmarkButton({ id, title, className = "" }) {
       }}
       aria-pressed={saved}
       aria-label={saved ? `Remove ${title} from saved offers` : `Save ${title}`}
-      className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border border-slate-200 bg-white/95 text-base shadow-sm hover:bg-slate-50 ${className}`}
+      className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border border-slate-200 bg-white/95 text-base shadow-sm transition hover:scale-110 hover:bg-slate-50 active:scale-90 ${className}`}
     >
       <span aria-hidden="true">{saved ? "★" : "☆"}</span>
     </button>
@@ -36,10 +36,11 @@ export function BookmarkButton({ id, title, className = "" }) {
 export function StatusPill({ status }) {
   if (status === "active") return null;
   const label = { unverified: "Unverified", expired: "Expired", unavailable: "Unavailable" }[status] || status;
-  return <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white">{label}</span>;
+  return <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white dark:text-slate-50">{label}</span>;
 }
 
-export default function OfferCard({ offer, compact = false }) {
+/** `index` staggers the card's entrance animation within the batch it arrived in. */
+export default function OfferCard({ offer, compact = false, index = 0 }) {
   const v = validityLabel(offer);
   const discount = discountLabel(offer);
   const distance = formatDistance(offer.distanceKm);
@@ -56,13 +57,14 @@ export default function OfferCard({ offer, compact = false }) {
 
   return (
     <article
-      className={`group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md ${compact ? "w-52 shrink-0 snap-start sm:w-56" : ""}`}
+      style={{ "--i": index }}
+      className={`card-in group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-600/40 hover:shadow-lg ${compact ? "w-52 shrink-0 snap-start sm:w-56" : ""}`}
     >
-      <div className="relative aspect-[2/1] bg-slate-100">
+      <div className="relative aspect-[2/1] overflow-hidden bg-slate-100">
         {offer.imageUrl ? (
           // Source images are external and vary in size; a plain lazy img avoids
           // proxying third-party images through our server.
-          <img src={offer.imageUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" draggable={false} className="h-full w-full object-cover" />
+          <img src={offer.imageUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="grid h-full place-items-center bg-gradient-to-br from-emerald-50 to-slate-100 text-2xl font-semibold text-emerald-800/70">
             {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}

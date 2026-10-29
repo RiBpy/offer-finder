@@ -10,10 +10,93 @@
   --color-brand-800: #065f46;
 }
 
+/* `dark:` utilities follow the class that ThemeToggle puts on <html>, not the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --page: #f8fafc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+}
+
+/* Dark theme. Tailwind's colour utilities read these variables, so remapping
+   the scales themes every component at once: slate is inverted (light text,
+   dark fills), and the pale tints used for badges become deep ones. */
+html.dark {
+  color-scheme: dark;
+  --page: #0b1220;
+  --surface: #121b2d;
+  --ink: #e2e8f0;
+
+  --color-slate-50: #172033;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #2a3a52;
+  --color-slate-300: #3b4b63;
+  --color-slate-400: #6b7c93;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #a9b6c8;
+  --color-slate-700: #cbd5e1;
+  --color-slate-800: #e2e8f0;
+  --color-slate-900: #f1f5f9;
+
+  --color-emerald-50: #0f2a22;
+  --color-emerald-100: #134e3a;
+
+  --color-red-50: #2a1215;
+  --color-red-100: #3b1519;
+  --color-red-200: #5c1d24;
+  --color-red-300: #7f1d1d;
+  --color-red-700: #fca5a5;
+  --color-red-800: #fecaca;
+  --color-red-900: #fee2e2;
+
+  --color-amber-50: #2a1f0a;
+  --color-amber-100: #3d2c0b;
+  --color-amber-200: #5c4310;
+  --color-amber-800: #fcd34d;
+  --color-amber-900: #fde68a;
+
+  --color-sky-50: #0c2333;
+  --color-sky-100: #0f3047;
+  --color-sky-800: #7dd3fc;
+
+  --color-violet-50: #22173d;
+  --color-violet-800: #c4b5fd;
+}
+
+/* White surfaces and green text can't be remapped through variables: the same
+   white is used for text on green buttons, and the same green for those buttons. */
+html.dark .bg-white {
+  background-color: var(--surface);
+}
+html.dark .bg-white\/95 {
+  background-color: rgb(18 27 45 / 0.95);
+}
+html.dark .bg-white\/70 {
+  background-color: rgb(18 27 45 / 0.7);
+}
+html.dark .text-emerald-700,
+html.dark .text-emerald-800,
+html.dark .text-emerald-800\/70 {
+  color: #6ee7b7;
+}
+html.dark .text-emerald-900 {
+  color: #a7f3d0;
+}
+
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--page);
+  color: var(--ink);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Colours glide instead of snapping while the theme is switched. */
+html.theme-switching,
+html.theme-switching * {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease !important;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -54,6 +137,10 @@ html {
   background-attachment: fixed;
   animation: skeleton-sweep 1.6s linear infinite;
 }
+html.dark .skeleton {
+  background-color: #1a2436;
+  background-image: linear-gradient(100deg, #1a2436 30%, #233049 45%, #173a31 50%, #233049 55%, #1a2436 70%);
+}
 
 /* Placeholder cards rise in one after another (set --i on each). */
 @keyframes skeleton-rise {
@@ -83,10 +170,47 @@ html {
   animation: live-dot 1.2s ease-in-out infinite;
 }
 
+/* Offer cards fade and rise in as results arrive, one after another (set --i). */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+.card-in {
+  animation: card-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation-delay: calc(min(var(--i, 0), 11) * 45ms);
+}
+
+/* Panels that open (More filters) slide down a little. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.panel-in {
+  animation: panel-in 0.22s ease-out both;
+}
+
+/* Sun and moon swap with a turn. */
+@keyframes icon-spin-in {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+}
+.icon-spin-in {
+  animation: icon-spin-in 0.35s cubic-bezier(0.2, 0.7, 0.3, 1.3) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton,
   .skeleton-card,
-  .live-dot {
+  .live-dot,
+  .card-in,
+  .panel-in,
+  .icon-spin-in {
     animation: none;
   }
 }

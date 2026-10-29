@@ -268,7 +268,7 @@ export default function LocationPicker({ open, onClose, onSelect, current, messa
       onClose={onClose}
       onClick={(e) => e.target === dialogRef.current && onClose()}
       aria-labelledby="loc-title"
-      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl p-0 shadow-2xl backdrop:bg-slate-900/50"
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl p-0 shadow-2xl backdrop:bg-slate-900/50 dark:backdrop:bg-black/60"
     >
       <div className="space-y-5 p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">

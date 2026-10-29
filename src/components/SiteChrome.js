@@ -1,9 +1,10 @@
 import Link from "next/link";
+import ThemeToggle from "./ThemeToggle";
 
 export function Logo() {
   return (
-    <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold text-slate-900">
-      <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-700 text-white">%</span>
+    <Link href="/" className="group flex shrink-0 items-center gap-2 font-semibold text-slate-900">
+      <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-700 text-white transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110">%</span>
       <span className="text-lg tracking-tight">OfferFinder</span>
     </Link>
   );
@@ -14,9 +15,10 @@ export function SimpleHeader() {
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
-        <nav className="flex gap-4 text-sm font-medium text-slate-600">
-          <Link href="/" className="hover:text-slate-900">Offers</Link>
-          <Link href="/saved" className="hover:text-slate-900">Saved</Link>
+        <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
+          <Link href="/" className="transition-colors hover:text-slate-900">Offers</Link>
+          <Link href="/saved" className="transition-colors hover:text-slate-900">Saved</Link>
+          <ThemeToggle />
         </nav>
       </div>
     </header>
