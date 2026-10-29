@@ -290,7 +290,7 @@ export default function HomeClient() {
           </div>
         )}
 
-        <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="space-y-4">
+        <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="min-h-[75vh] space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
             <div className="flex items-center gap-2 text-sm text-slate-500">

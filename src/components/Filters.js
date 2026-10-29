@@ -99,7 +99,8 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
+      {/* One line that scrolls sideways when it does not fit: wrapping made the row grow as filters (and Clear all) appeared, shifting the page. */}
+      <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 py-1 [&>*]:shrink-0">
         <ClearableSelect id="f-validity" label="validity" value={filters.validity} defaultValue={DEFAULT_FILTERS.validity} onChange={set("validity")} onClear={clear("validity", "from", "to")}>
           {VALIDITY_MODES.map((m) => (
             <option key={m.id} value={m.id}>{m.label}</option>
