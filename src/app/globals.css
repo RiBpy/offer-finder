@@ -66,8 +66,15 @@ html.dark {
 
 /* White surfaces and green text can't be remapped through variables: the same
    white is used for text on green buttons, and the same green for those buttons. */
-html.dark .bg-white {
+html.dark .bg-white,
+html.dark .focus\:bg-white:focus {
   background-color: var(--surface);
+}
+html.dark .bg-white\/80 {
+  background-color: rgb(11 18 32 / 0.8);
+}
+html.dark .bg-white\/60 {
+  background-color: rgb(11 18 32 / 0.6);
 }
 html.dark .bg-white\/95 {
   background-color: rgb(18 27 45 / 0.95);

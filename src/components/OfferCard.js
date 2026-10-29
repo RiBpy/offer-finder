@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { categoryLabel, sourceTypeLabel } from "@/lib/constants";
 import { AVAILABILITY_LABELS, discountLabel, formatMoney, timeAgo, validityLabel } from "@/lib/format";
@@ -39,6 +40,27 @@ export function StatusPill({ status }) {
   return <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white dark:text-slate-50">{label}</span>;
 }
 
+// Wider than this is a logo or banner, not a photo: show it whole instead of cropping it to fill the box.
+const LOGO_ASPECT = 2.6;
+
+function OfferImage({ src }) {
+  const [logo, setLogo] = useState(false);
+  return (
+    // Source images are external and vary in size; a plain lazy img avoids
+    // proxying third-party images through our server.
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      draggable={false}
+      onLoad={(e) => setLogo(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight > LOGO_ASPECT)}
+      className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${logo ? "object-contain p-4" : "object-cover"}`}
+    />
+  );
+}
+
 /** `index` staggers the card's entrance animation within the batch it arrived in. */
 export default function OfferCard({ offer, compact = false, index = 0 }) {
   const v = validityLabel(offer);
@@ -60,12 +82,9 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
       style={{ "--i": index }}
       className={`card-in group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-600/40 hover:shadow-lg ${compact ? "w-52 shrink-0 snap-start sm:w-56" : ""}`}
     >
-      <div className="relative aspect-[2/1] overflow-hidden bg-slate-100">
-        {offer.imageUrl ? (
-          // Source images are external and vary in size; a plain lazy img avoids
-          // proxying third-party images through our server.
-          <img src={offer.imageUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" draggable={false} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
+      {/* Images sit on white in both themes: many are transparent logos with dark lettering. */}
+      <div className={`relative aspect-[2/1] overflow-hidden ${offer.imageUrl ? "bg-[#fff]" : "bg-slate-100"}`}>
+        {offer.imageUrl ? <OfferImage src={offer.imageUrl} /> : (
           <div className="grid h-full place-items-center bg-gradient-to-br from-emerald-50 to-slate-100 text-2xl font-semibold text-emerald-800/70">
             {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}
           </div>

@@ -1,27 +1,37 @@
 import Link from "next/link";
+import HeaderShell from "./HeaderShell";
 import ThemeToggle from "./ThemeToggle";
 
 export function Logo() {
   return (
-    <Link href="/" className="group flex shrink-0 items-center gap-2 font-semibold text-slate-900">
-      <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-700 text-white transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110">%</span>
-      <span className="text-lg tracking-tight">OfferFinder</span>
+    <Link href="/" className="group flex shrink-0 items-center gap-2.5 font-semibold">
+      <span
+        aria-hidden="true"
+        className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-lg font-bold text-white shadow-md shadow-emerald-600/30 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
+      >
+        %
+      </span>
+      <span className="text-lg tracking-tight text-slate-900">
+        Offer<span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Finder</span>
+      </span>
     </Link>
   );
 }
 
+const navLink = "rounded-full px-3 py-1.5 transition-colors hover:bg-slate-100 hover:text-slate-900";
+
 export function SimpleHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
+    <HeaderShell>
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
-        <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
-          <Link href="/" className="transition-colors hover:text-slate-900">Offers</Link>
-          <Link href="/saved" className="transition-colors hover:text-slate-900">Saved</Link>
-          <ThemeToggle />
+        <nav className="flex items-center gap-1 text-sm font-medium text-slate-600">
+          <Link href="/" className={navLink}>Offers</Link>
+          <Link href="/saved" className={navLink}>Saved</Link>
+          <ThemeToggle className="ml-2" />
         </nav>
       </div>
-    </header>
+    </HeaderShell>
   );
 }
 

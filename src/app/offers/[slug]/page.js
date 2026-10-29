@@ -87,7 +87,7 @@ export default async function OfferPage({ params }) {
 
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           {offer.imageUrl && (
-            <img src={offer.imageUrl} alt="" referrerPolicy="no-referrer" className="aspect-[16/9] w-full object-cover" />
+            <img src={offer.imageUrl} alt="" referrerPolicy="no-referrer" className="aspect-[16/9] w-full bg-[#fff] object-contain" />
           )}
           <div className="space-y-4 p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-2 text-xs">
