@@ -23,6 +23,15 @@ body {
   scrollbar-width: none;
 }
 
+/* The page scrollbar came and went as results loaded, shifting the layout
+   sideways. Hide it; the page still scrolls with the wheel, keys and touch. */
+html::-webkit-scrollbar {
+  display: none;
+}
+html {
+  scrollbar-width: none;
+}
+
 :focus-visible {
   outline: 2px solid #059669;
   outline-offset: 2px;
