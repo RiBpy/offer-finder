@@ -212,7 +212,7 @@ export default function HomeClient() {
 
   return (
     <>
-      <HeaderShell>
+      <HeaderShell spacerClassName="h-[168px] sm:h-[69px]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <Logo />
           <button
