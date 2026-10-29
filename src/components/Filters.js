@@ -27,19 +27,20 @@ export function isDefaultFilters(f) {
 
 const select = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600";
 
-export function CategoryNav({ filters, setFilters }) {
+export function CategoryNav({ filters, setFilters, counts }) {
   const rowRef = useDragScroll();
   const chip = (active) =>
     `flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition ${
       active ? "border-emerald-700 bg-emerald-700 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
     }`;
+  const count = (n) => counts && <span className="tabular-nums opacity-70">({n ?? 0})</span>;
   return (
     <nav ref={rowRef} aria-label="Categories" className="no-scrollbar -mx-4 flex cursor-grab snap-x gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1">
       <button type="button" className={chip(!filters.category && !filters.brandOnly)} onClick={() => setFilters((f) => ({ ...f, category: "", brandOnly: false }))}>
-        All offers
+        All offers {count(counts?.all)}
       </button>
       <button type="button" aria-pressed={filters.brandOnly} className={chip(filters.brandOnly)} onClick={() => setFilters((f) => ({ ...f, brandOnly: !f.brandOnly }))}>
-        <span aria-hidden="true">🏷️</span> Brand Offers
+        <span aria-hidden="true">🏷️</span> Brand Offers {count(counts?.brand)}
       </button>
       {CATEGORIES.map((c) => (
         <button
@@ -49,7 +50,7 @@ export function CategoryNav({ filters, setFilters }) {
           className={chip(filters.category === c.id)}
           onClick={() => setFilters((f) => ({ ...f, category: f.category === c.id ? "" : c.id }))}
         >
-          <span aria-hidden="true">{c.icon}</span> {c.label}
+          <span aria-hidden="true">{c.icon}</span> {c.label} {count(counts?.categories[c.id])}
         </button>
       ))}
     </nav>

@@ -144,6 +144,7 @@ export function parseOfferQuery(sp, now = new Date()) {
       sort,
       page,
       limit,
+      withCounts: get("counts") === "1",
     },
   };
 }
@@ -257,7 +258,8 @@ function sortStages(sort) {
   }
 }
 
-export function buildOfferPipeline(p, now = new Date()) {
+// Location, date, status and attribute filters, before sorting and paging.
+function matchStages(p, now) {
   const base = { $and: [statusFilter(p, now), validityFilter(p), ...attributeFilters(p, now)] };
   const { lat, lng } = p.location;
   const pipeline = [];
@@ -290,18 +292,54 @@ export function buildOfferPipeline(p, now = new Date()) {
     // No location at all: only offers that do not depend on location.
     pipeline.push({ $match: { $and: [base, { $or: or.length ? or : [{ scope: "online" }] }] } });
   }
-
-  pipeline.push(...sortStages(p.sort), {
-    $facet: {
-      items: [{ $skip: (p.page - 1) * p.limit }, { $limit: p.limit }, { $project: PUBLIC_PROJECTION }],
-      total: [{ $count: "n" }],
-    },
-  });
   return pipeline;
 }
 
+export function buildOfferPipeline(p, now = new Date()) {
+  return [
+    ...matchStages(p, now),
+    ...sortStages(p.sort),
+    {
+      $facet: {
+        items: [{ $skip: (p.page - 1) * p.limit }, { $limit: p.limit }, { $project: PUBLIC_PROJECTION }],
+        total: [{ $count: "n" }],
+      },
+    },
+  ];
+}
+
+/**
+ * Offers per category and for Brand Offers under the current location, date
+ * and other filters, so each category chip can show what selecting it gives.
+ */
+export function buildCountsPipeline(p, now = new Date()) {
+  const unscoped = { ...p, category: null, section: p.section === "brand" ? null : p.section };
+  return [
+    ...matchStages(unscoped, now),
+    {
+      $facet: {
+        all: [{ $count: "n" }],
+        brand: [{ $match: { isBrandOffer: true } }, { $count: "n" }],
+        byCategory: [{ $unwind: "$categories" }, { $group: { _id: "$categories", n: { $sum: 1 } } }],
+      },
+    },
+  ];
+}
+
+async function countOffers(db, params, now) {
+  const [res] = await db.collection("offers").aggregate(buildCountsPipeline(params, now), { maxTimeMS: 8000 }).toArray();
+  return {
+    all: res?.all?.[0]?.n ?? 0,
+    brand: res?.brand?.[0]?.n ?? 0,
+    categories: Object.fromEntries((res?.byCategory ?? []).map((c) => [c._id, c.n])),
+  };
+}
+
 export async function searchOffers(db, params, now = new Date()) {
-  const [res] = await db.collection("offers").aggregate(buildOfferPipeline(params, now), { maxTimeMS: 8000 }).toArray();
+  const [[res], counts] = await Promise.all([
+    db.collection("offers").aggregate(buildOfferPipeline(params, now), { maxTimeMS: 8000 }).toArray(),
+    params.withCounts ? countOffers(db, params, now) : null,
+  ]);
   const total = res?.total?.[0]?.n ?? 0;
   return {
     items: (res?.items ?? []).map(toPublicOffer),
@@ -310,6 +348,7 @@ export async function searchOffers(db, params, now = new Date()) {
     limit: params.limit,
     hasMore: params.page * params.limit < total,
     staleDays: staleDays(),
+    ...(counts ? { counts } : {}),
   };
 }
 

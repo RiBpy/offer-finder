@@ -84,6 +84,8 @@ export default function HomeClient() {
   const [locating, setLocating] = useState(false);
   const [geoAttempted, setGeoAttempted] = useState(false);
   const [feed, setFeed] = useState({ status: "idle", items: [], total: 0, page: 1, hasMore: false, error: null });
+  // Offers per category chip; kept while a new query loads so the chips do not flicker.
+  const [counts, setCounts] = useState(null);
   const [searchText, setSearchText] = useState("");
   const autoTried = useRef(false);
   // Discovery runs on page load (the server applies a shared cooldown).
@@ -131,9 +133,11 @@ export default function HomeClient() {
       const p = new URLSearchParams(paramsKey);
       p.set("page", String(page));
       p.set("limit", String(PAGE_SIZE));
+      if (page === 1) p.set("counts", "1");
       if (!silent) setFeed((f) => ({ ...f, status: page === 1 ? "loading" : "loading-more", error: null }));
       try {
         const d = await fetchOffers(p, signal);
+        if (d.counts) setCounts(d.counts);
         setFeed((f) => ({ status: "done", items: page === 1 ? d.items : [...f.items, ...d.items], total: d.total, page, hasMore: d.hasMore, error: null }));
       } catch (e) {
         if (e.name !== "AbortError") setFeed((f) => ({ ...f, status: "error", error: e.message }));
@@ -251,7 +255,7 @@ export default function HomeClient() {
               Your browser may ask for permission to share your location. We use it only to find nearby offers and never store it on our servers.
             </p>
           )}
-          <CategoryNav filters={filters} setFilters={setFilters} />
+          <CategoryNav filters={filters} setFilters={setFilters} counts={counts} />
           <FilterBar filters={filters} setFilters={setFilters} hasCoords={location?.lat != null} hasCity={Boolean(location?.city)} />
         </div>
 
