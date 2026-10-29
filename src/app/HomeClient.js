@@ -27,7 +27,7 @@ function buildParams({ location, filters, tz, date }) {
     if (filters.from) p.set("from", filters.from);
     if (filters.to) p.set("to", filters.to);
   }
-  for (const k of ["q", "category", "brand", "sourceType", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
+  for (const k of ["q", "category", "brand", "sourceType", "bank", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
   if (filters.availability !== "any") p.set("availability", filters.availability);
   if (filters.brandOnly) p.set("section", "brand");
   let sort = filters.sort;
@@ -138,7 +138,13 @@ export default function HomeClient() {
       try {
         const d = await fetchOffers(p, signal);
         if (d.counts) setCounts(d.counts);
-        setFeed((f) => ({ status: "done", items: page === 1 ? d.items : [...f.items, ...d.items], total: d.total, page, hasMore: d.hasMore, error: null }));
+        setFeed((f) => {
+          // Offers published since page 1 shift later pages, so a page can repeat
+          // offers already shown; keep the first copy of each.
+          const seen = new Set(page === 1 ? [] : f.items.map((o) => o.id));
+          const items = page === 1 ? d.items : [...f.items, ...d.items.filter((o) => !seen.has(o.id))];
+          return { status: "done", items, total: d.total, page, hasMore: d.hasMore, error: null };
+        });
       } catch (e) {
         if (e.name !== "AbortError") setFeed((f) => ({ ...f, status: "error", error: e.message }));
       }

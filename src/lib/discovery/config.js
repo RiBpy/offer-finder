@@ -10,6 +10,7 @@
 //             sitemap + sitemapPattern sitemap (or index); matching URL paths are queued
 //             pages                    pages that themselves list many offers
 //             recheckDays              re-read already processed pages after N days
+//             adapter                  site-specific reader (only "ebl", see ebl.js)
 //           Only sites that render offers in plain HTML work (no JavaScript is
 //           executed), and robots.txt is always respected.
 
@@ -65,6 +66,13 @@ export const SITES = [
     name: "Mutual Trust Bank",
     sitemap: "https://www.mutualtrustbank.com/privilegepartners-sitemap.xml",
     sitemapPattern: /^\/privilege-partners\/[a-z0-9-]+\/?$/,
+  },
+  {
+    // Partner details load with a form post, so a dedicated reader handles them.
+    name: "EBL",
+    url: "https://www.ebl.com.bd/retail/ebl-discount-partners",
+    adapter: "ebl",
+    recheckDays: 14,
   },
   {
     name: "LankaBangla Finance",

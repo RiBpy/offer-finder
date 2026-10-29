@@ -13,6 +13,7 @@ import { DISCOVERY_REGION, FEEDS, SEARCHES, SITES } from "./config.js";
 import { fetchFeedCandidates, fetchSearchCandidates, fetchSiteCandidates, looksLikeOffer } from "./feeds.js";
 import { aiEnabled, aiErrorMessage, aiModel, extractOffersWithAi, isAiServiceError } from "./ai-extract.js";
 import { publishExtracted } from "./publish.js";
+import { fetchEblPartner } from "./ebl.js";
 
 const COLLECT_EVERY_MS = 3 * 3600 * 1000;
 // Hotel and dining pages are read first: they are the offers people look for most.
@@ -119,21 +120,48 @@ export function pageUrl(canonical, fetchedUrl) {
   return c;
 }
 
-async function processItem(db, item, now) {
+const httpFailure = (status) => ({ status: status === 404 || status === 410 ? "gone" : "failed", error: `HTTP ${status}` });
+
+/**
+ * What the AI reads for one queued item: { page: { url, title, text, publishedAt,
+ * imageUrl, siteName } }, or { result } when there is nothing to read.
+ */
+async function readItem(db, item, now) {
+  if (item.adapter === "ebl") {
+    const p = await fetchEblPartner(item);
+    await recordSourceResult(db, item.url, { ok: p.status < 400, status: p.status, error: p.status >= 400 ? `HTTP ${p.status}` : null, adapter: "ebl", now });
+    if (p.status >= 400) return { result: httpFailure(p.status) };
+    return { page: { url: item.url, title: p.title, text: p.text, publishedAt: p.publishedAt, imageUrl: p.imageUrl, siteName: null } };
+  }
+
   const res = await politeFetch(item.url, { retries: 1 });
   await recordSourceResult(db, item.url, { ok: res.status < 400, status: res.status, error: res.status >= 400 ? `HTTP ${res.status}` : null, adapter: "discovery", now });
-  if (res.status >= 400) return { status: res.status === 404 || res.status === 410 ? "gone" : "failed", error: `HTTP ${res.status}` };
-  if (!/html/i.test(res.headers.get("content-type") || "")) return { status: "no_offer", error: "not an HTML page" };
+  if (res.status >= 400) return { result: httpFailure(res.status) };
+  if (!/html/i.test(res.headers.get("content-type") || "")) return { result: { status: "no_offer", error: "not an HTML page" } };
 
   const meta = extractFromHtml(res.body, res.url);
   const text = visibleText(res.body, 60000);
-  if (item.sourceType === "news" && !looksLikeOffer(item.title, meta.title, text)) return { status: "no_offer" };
+  if (item.sourceType === "news" && !looksLikeOffer(item.title, meta.title, text)) return { result: { status: "no_offer" } };
+  return {
+    page: {
+      url: pageUrl(meta.canonicalUrl, res.url) || item.url,
+      title: meta.title || item.title,
+      text,
+      publishedAt: item.publishedAt || meta.publishedAt || null,
+      imageUrl: meta.imageUrl,
+      siteName: meta.siteName,
+    },
+  };
+}
 
-  const url = pageUrl(meta.canonicalUrl, res.url) || item.url;
-  const publishedAt = item.publishedAt || meta.publishedAt || null;
+async function processItem(db, item, now) {
+  const { page, result } = await readItem(db, item, now);
+  if (result) return result;
+
+  const { url, text, publishedAt } = page;
   const { offers, usage, refused } = await extractOffersWithAi({
     url,
-    title: meta.title || item.title,
+    title: page.title,
     text,
     publishedAt,
     today: todayYmd(DISCOVERY_REGION.timezone, now),
@@ -146,10 +174,10 @@ async function processItem(db, item, now) {
       outcomes.push(
         await publishExtracted(db, x, {
           url,
-          sourceName: item.sourceName || meta.siteName || new URL(url).hostname.replace(/^www\./, ""),
+          sourceName: item.sourceName || page.siteName || new URL(url).hostname.replace(/^www\./, ""),
           sourceType: item.sourceType,
           publishedAt,
-          imageUrl: meta.imageUrl,
+          imageUrl: page.imageUrl,
           region: DISCOVERY_REGION,
           now,
         }),

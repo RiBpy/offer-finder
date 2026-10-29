@@ -38,6 +38,14 @@ export function sourceTypeLabel(id) {
   return SOURCE_TYPES.find((s) => s.id === id)?.label ?? id;
 }
 
+// Card-offer filter: `sourceName` matches the site names in discovery/config.js.
+export const BANKS = [
+  { id: "ebl", label: "EBL", sourceName: "EBL" },
+  { id: "brac", label: "BRAC Bank", sourceName: "BRAC Bank" },
+  { id: "mtb", label: "MTB", sourceName: "Mutual Trust Bank" },
+];
+export const BANK_IDS = BANKS.map((b) => b.id);
+
 // online = online only, in_store = physical only, both = online and in store
 export const AVAILABILITY_TYPES = ["online", "in_store", "both"];
 

@@ -24,9 +24,11 @@ Public endpoints are rate limited per IP (best effort, per instance).
 | `availability` | `any` | `online` (online or both), `online_only`, `in_store` |
 | `minDiscount` | | Percent, 0–100 (percent-type discounts only) |
 | `sourceType` | | `official_website, campaign_page, social_media, news, business_submitted, other` |
+| `bank` | | `ebl, brac, mtb`: card offers from that bank's own website |
 | `section` | | `brand, near, ending, recent` (homepage rows) |
 | `sort` | `newest` | `newest, nearest, ending, discount, verified` |
 | `page`, `limit` | `1`, `20` | `limit` max 50 |
+| `counts` | | `1` adds `counts: { all, brand, categories: { id: n } }`, ignoring `category` and `section=brand` |
 
 Response: `{ items: [offer], total, page, limit, hasMore, staleDays }`. Each item has
 `distanceKm` (nearest verified branch) or `null`.

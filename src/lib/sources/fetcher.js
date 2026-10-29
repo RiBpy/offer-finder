@@ -72,16 +72,18 @@ async function readLimited(res) {
   return new TextDecoder("utf-8", { fatal: false }).decode(Buffer.concat(chunks.map((c) => Buffer.from(c))));
 }
 
-async function rawFetch(url, { timeoutMs = 10000, accept = "text/html,application/xhtml+xml" } = {}) {
+async function rawFetch(url, { timeoutMs = 10000, accept = "text/html,application/xhtml+xml", method = "GET", body: payload, headers } = {}) {
   let current = url;
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     await assertPublicUrl(current);
     let res;
     try {
       res = await fetch(current, {
+        method,
+        body: payload,
         redirect: "manual",
         signal: AbortSignal.timeout(timeoutMs),
-        headers: { "User-Agent": userAgent(), Accept: accept, "Accept-Language": "en" },
+        headers: { "User-Agent": userAgent(), Accept: accept, "Accept-Language": "en", ...headers },
       });
     } catch (err) {
       const timeout = err?.name === "TimeoutError";
@@ -92,6 +94,9 @@ async function rawFetch(url, { timeoutMs = 10000, accept = "text/html,applicatio
     }
     if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
       current = new URL(res.headers.get("location"), current).toString();
+      // Browsers follow a redirected form post with a plain GET.
+      method = "GET";
+      payload = undefined;
       continue;
     }
     const body = await readLimited(res);
@@ -171,15 +176,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /**
  * Fetches a source page politely. Returns { status, url, body, headers }.
  * Throws FetchError with code ROBOTS_DISALLOWED when robots.txt forbids it.
+ * `method`, `body` and `headers` are for sites that load offer details with a
+ * form post (see discovery/ebl.js).
  */
-export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeoutMs, accept } = {}) {
+export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeoutMs, accept, method, body, headers } = {}) {
   if (!(await robotsAllows(url))) {
     throw new FetchError("robots.txt disallows fetching this URL", { code: "ROBOTS_DISALLOWED" });
   }
   let attempt = 0;
   for (;;) {
     try {
-      const res = await rawFetch(url, { timeoutMs, ...(accept ? { accept } : {}) });
+      const res = await rawFetch(url, { timeoutMs, ...(accept ? { accept } : {}), method, body, headers });
       if ((res.status >= 500 || res.status === 429) && attempt < retries) throw new FetchError(`HTTP ${res.status}`, { status: res.status, retryable: true });
       return res;
     } catch (err) {

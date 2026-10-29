@@ -1,6 +1,6 @@
 // Parses public offer queries and builds the MongoDB aggregation pipeline.
 
-import { CATEGORY_IDS, SOURCE_TYPE_IDS, SORTS, VALIDITY_MODES } from "../constants.js";
+import { BANKS, BANK_IDS, CATEGORY_IDS, SOURCE_TYPE_IDS, SORTS, VALIDITY_MODES } from "../constants.js";
 import { addDaysYmd, dayRangeInZone, isValidTimeZone, isYmd, todayYmd, DAY_MS } from "../dates.js";
 import { isLatitude, isLongitude, roundCoord } from "../geo.js";
 import { cleanText, escapeRegex, normalizeKey } from "../text.js";
@@ -105,6 +105,8 @@ export function parseOfferQuery(sp, now = new Date()) {
   if (category && !CATEGORY_IDS.includes(category)) errors.category = "Unknown category";
   const sourceType = get("sourceType");
   if (sourceType && !SOURCE_TYPE_IDS.includes(sourceType)) errors.sourceType = "Unknown source type";
+  const bank = get("bank");
+  if (bank && !BANK_IDS.includes(bank)) errors.bank = "Unknown bank";
   const availability = get("availability") || "any";
   if (!["any", "online", "online_only", "in_store"].includes(availability)) errors.availability = "Unknown availability";
   const minDiscount = get("minDiscount") == null ? null : Number(get("minDiscount"));
@@ -138,6 +140,7 @@ export function parseOfferQuery(sp, now = new Date()) {
       category,
       brandKey: normalizeKey(get("brand")),
       sourceType,
+      bank,
       availability,
       minDiscount,
       section,
@@ -195,6 +198,7 @@ function attributeFilters(p, now) {
   if (p.category) and.push({ categories: p.category });
   if (p.brandKey) and.push({ brandKey: p.brandKey });
   if (p.sourceType) and.push({ sourceType: p.sourceType });
+  if (p.bank) and.push({ sourceName: BANKS.find((b) => b.id === p.bank).sourceName });
   if (p.availability === "online") and.push({ availabilityType: { $in: ["online", "both"] } });
   if (p.availability === "online_only") and.push({ availabilityType: "online" });
   if (p.availability === "in_store") and.push({ availabilityType: { $in: ["in_store", "both"] } });

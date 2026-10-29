@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, VALIDITY_MODES } from "@/lib/constants";
+import { BANKS, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, VALIDITY_MODES } from "@/lib/constants";
 import { useDragScroll } from "./hooks";
 
 export const DEFAULT_FILTERS = {
@@ -16,6 +16,7 @@ export const DEFAULT_FILTERS = {
   availability: "any",
   brand: "",
   sourceType: "",
+  bank: "",
   minDiscount: "",
   sort: "newest",
   unverified: false,
@@ -108,6 +109,13 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
         <select id="f-sort" className={select} value={filters.sort} onChange={set("sort")}>
           {SORTS.filter((s) => s.id !== "nearest" || hasCoords).map((s) => (
             <option key={s.id} value={s.id}>Sort: {s.label}</option>
+          ))}
+        </select>
+        <label className="sr-only" htmlFor="f-bank">Bank card offers</label>
+        <select id="f-bank" className={select} value={filters.bank} onChange={set("bank")}>
+          <option value="">All banks</option>
+          {BANKS.map((b) => (
+            <option key={b.id} value={b.id}>{b.label} card offers</option>
           ))}
         </select>
         <button
