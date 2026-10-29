@@ -58,6 +58,29 @@ export function CategoryNav({ filters, setFilters, counts }) {
   );
 }
 
+// A filter select with a small × that resets it, shown only while it is set.
+function ClearableSelect({ value, defaultValue = "", onClear, label, className = "", children, ...props }) {
+  const set = value !== defaultValue;
+  return (
+    <span className={`relative inline-flex ${className}`}>
+      <select {...props} aria-label={label} value={value} className={`${select} w-full ${set ? "pr-14" : ""}`}>
+        {children}
+      </select>
+      {set && (
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label={`Clear ${label}`}
+          title={`Clear ${label}`}
+          className="absolute right-7 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-base leading-none text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        >
+          ×
+        </button>
+      )}
+    </span>
+  );
+}
+
 export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
   const [open, setOpen] = useState(false);
   const [brands, setBrands] = useState([]);
@@ -65,6 +88,7 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
     const v = e.target.type === "checkbox" ? e.target.checked : e.target.value;
     setFilters((f) => ({ ...f, [k]: v }));
   };
+  const clear = (...keys) => () => setFilters((f) => ({ ...f, ...Object.fromEntries(keys.map((k) => [k, DEFAULT_FILTERS[k]])) }));
 
   useEffect(() => {
     if (!open || brands.length) return;
@@ -76,16 +100,21 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
 
   const radiusOptions = RADIUS_OPTIONS.filter((r) => (r.id === "city" ? hasCity : r.id === "country" ? true : hasCoords));
   const extraCount = ["availability", "brand", "sourceType", "minDiscount"].filter((k) => filters[k] !== DEFAULT_FILTERS[k]).length + (filters.unverified ? 1 : 0) + (filters.national ? 0 : 1);
+  // Sits after the last filter: in the first row, or at the end of the open panel.
+  const clearAll = !isDefaultFilters(filters) && (
+    <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, radius: filters.radius })} className="px-2 py-2 text-sm font-medium text-emerald-700 hover:underline">
+      Clear all filters
+    </button>
+  );
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="sr-only" htmlFor="f-validity">Validity</label>
-        <select id="f-validity" className={select} value={filters.validity} onChange={set("validity")}>
+        <ClearableSelect id="f-validity" label="validity" value={filters.validity} defaultValue={DEFAULT_FILTERS.validity} onChange={set("validity")} onClear={clear("validity", "from", "to")}>
           {VALIDITY_MODES.map((m) => (
             <option key={m.id} value={m.id}>{m.label}</option>
           ))}
-        </select>
+        </ClearableSelect>
         {filters.validity === "custom" && (
           <span className="flex items-center gap-1 text-sm">
             <label className="sr-only" htmlFor="f-from">From</label>
@@ -111,13 +140,12 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
             <option key={s.id} value={s.id}>Sort: {s.label}</option>
           ))}
         </select>
-        <label className="sr-only" htmlFor="f-bank">Bank card offers</label>
-        <select id="f-bank" className={select} value={filters.bank} onChange={set("bank")}>
+        <ClearableSelect id="f-bank" label="bank" value={filters.bank} onChange={set("bank")} onClear={clear("bank")}>
           <option value="">All banks</option>
           {BANKS.map((b) => (
             <option key={b.id} value={b.id}>{b.label} card offers</option>
           ))}
-        </select>
+        </ClearableSelect>
         <button
           type="button"
           aria-expanded={open}
@@ -127,52 +155,48 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
         >
           More filters{extraCount ? ` (${extraCount})` : ""}
         </button>
-        {!isDefaultFilters(filters) && (
-          <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, radius: filters.radius })} className="px-2 py-2 text-sm font-medium text-emerald-700 hover:underline">
-            Clear all filters
-          </button>
-        )}
+        {!open && clearAll}
       </div>
 
       {open && (
         <div id="more-filters" className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Where to redeem</span>
-            <select className={`${select} w-full`} value={filters.availability} onChange={set("availability")}>
+            <ClearableSelect className="w-full" label="where to redeem" value={filters.availability} defaultValue={DEFAULT_FILTERS.availability} onChange={set("availability")} onClear={clear("availability")}>
               <option value="any">Online or in-store</option>
               <option value="in_store">In-store</option>
               <option value="online">Available online</option>
               <option value="online_only">Online only</option>
-            </select>
+            </ClearableSelect>
           </label>
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Brand</span>
             {/* A select, not a datalist: a datalist only suggests names matching what is typed, so once a brand was picked the others disappeared. */}
-            <select className={`${select} w-full`} value={filters.brand} onChange={set("brand")}>
+            <ClearableSelect className="w-full" label="brand" value={filters.brand} onChange={set("brand")} onClear={clear("brand")}>
               <option value="">Any brand</option>
               {filters.brand && !brands.includes(filters.brand) && <option value={filters.brand}>{filters.brand}</option>}
               {brands.map((b) => (
                 <option key={b} value={b}>{b}</option>
               ))}
-            </select>
+            </ClearableSelect>
           </label>
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Source</span>
-            <select className={`${select} w-full`} value={filters.sourceType} onChange={set("sourceType")}>
+            <ClearableSelect className="w-full" label="source" value={filters.sourceType} onChange={set("sourceType")} onClear={clear("sourceType")}>
               <option value="">Any source</option>
               {SOURCE_TYPES.map((s) => (
                 <option key={s.id} value={s.id}>{s.label}</option>
               ))}
-            </select>
+            </ClearableSelect>
           </label>
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Minimum discount</span>
-            <select className={`${select} w-full`} value={filters.minDiscount} onChange={set("minDiscount")}>
+            <ClearableSelect className="w-full" label="minimum discount" value={filters.minDiscount} onChange={set("minDiscount")} onClear={clear("minDiscount")}>
               <option value="">Any</option>
               {[10, 20, 30, 40, 50, 70].map((n) => (
                 <option key={n} value={n}>{n}% or more</option>
               ))}
-            </select>
+            </ClearableSelect>
           </label>
           <label className="flex items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" checked={filters.national} onChange={set("national")} className="h-4 w-4 accent-emerald-700" />
@@ -182,6 +206,7 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
             <input type="checkbox" checked={filters.unverified} onChange={set("unverified")} className="h-4 w-4 accent-emerald-700" />
             Also show unverified offers (clearly labelled)
           </label>
+          {clearAll && <div className="flex justify-end sm:col-span-2 lg:col-span-4">{clearAll}</div>}
         </div>
       )}
     </div>
