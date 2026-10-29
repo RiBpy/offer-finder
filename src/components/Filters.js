@@ -147,12 +147,14 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
           </label>
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Brand</span>
-            <input list="brand-list" className={`${select} w-full`} value={filters.brand} onChange={set("brand")} placeholder="Any brand" />
-            <datalist id="brand-list">
+            {/* A select, not a datalist: a datalist only suggests names matching what is typed, so once a brand was picked the others disappeared. */}
+            <select className={`${select} w-full`} value={filters.brand} onChange={set("brand")}>
+              <option value="">Any brand</option>
+              {filters.brand && !brands.includes(filters.brand) && <option value={filters.brand}>{filters.brand}</option>}
               {brands.map((b) => (
-                <option key={b} value={b} />
+                <option key={b} value={b}>{b}</option>
               ))}
-            </datalist>
+            </select>
           </label>
           <label className="text-sm">
             <span className="mb-1 block font-medium text-slate-700">Source</span>
