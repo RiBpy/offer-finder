@@ -49,6 +49,7 @@ export const BANKS = [
   // offers come from news; in Bangladesh, Amex cards are issued only by City Bank.
   { id: "city", label: "City Bank", sourceName: "City Bank", names: ["City Bank", "Amex", "American Express"] },
   { id: "ific", label: "IFIC Bank", sourceName: "IFIC Bank", names: ["IFIC"] },
+  { id: "mbl", label: "Mercantile Bank", sourceName: "Mercantile Bank", names: ["Mercantile Bank", "MBL"] },
 ];
 export const BANK_IDS = BANKS.map((b) => b.id);
 
