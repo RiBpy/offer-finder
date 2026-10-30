@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import OfferCard, { OfferCardSkeleton } from "@/components/OfferCard";
 import LocationPicker, { requestBrowserLocation } from "@/components/LocationPicker";
-import { CategoryNav, DEFAULT_FILTERS, FilterBar, isDefaultFilters } from "@/components/Filters";
+import { CategoryNav, DEFAULT_FILTERS, FilterBar, describeFilters, filtersFromSearch, filtersToSearch, isDefaultFilters } from "@/components/Filters";
 import { Logo, BottomNav } from "@/components/SiteChrome";
 import ThemeToggle from "@/components/ThemeToggle";
 import HeaderShell from "@/components/HeaderShell";
 import { useDragScroll, useStoredState, useToday } from "@/components/hooks";
 import { categoryLabel } from "@/lib/constants";
+import { rememberList, rememberedList, takeScrollRestore } from "@/lib/return-to";
 
 const PAGE_SIZE = 12;
 
@@ -81,6 +82,8 @@ export default function HomeClient() {
   const { tz, date } = useToday();
   const [location, setLocation, locationLoaded] = useStoredState("of.location", null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  // Filters come from the address bar, read once on the client before the first load.
+  const [filtersReady, setFiltersReady] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerMessage, setPickerMessage] = useState(null);
   const [locating, setLocating] = useState(false);
@@ -94,15 +97,42 @@ export default function HomeClient() {
   const [discovery, setDiscovery] = useState({ status: "idle", found: 0 });
   const [reloadToken, setReloadToken] = useState(0);
   const discoveryStarted = useRef(false);
+  const scrollRestored = useRef(false);
+
+  useEffect(() => {
+    const initial = filtersFromSearch(window.location.search);
+    setFilters(initial);
+    setSearchText(initial.q);
+    setFiltersReady(true);
+    // The bottom bar's "Location" link opens the picker.
+    if (new URLSearchParams(window.location.search).get("location") === "1") setPickerOpen(true);
+  }, []);
+
+  // Keep the address bar in step with the filters, and remember this list so
+  // offer pages can link back to it.
+  const listHref = useMemo(() => {
+    const qs = filtersToSearch(filters);
+    return qs ? `/?${qs}` : "/";
+  }, [filters]);
+  const listName = describeFilters(filters);
+  const listLabel = listName ? `${listName} offers` : "";
+  useEffect(() => {
+    if (!filtersReady) return;
+    if (window.location.pathname + window.location.search !== listHref) window.history.replaceState(null, "", listHref);
+    // Same list as remembered (e.g. on the way back): keep its scroll position.
+    const prev = rememberedList();
+    if (prev?.href !== listHref || prev.label !== listLabel) rememberList({ href: listHref, label: listLabel, scrollY: 0 });
+  }, [filtersReady, listHref, listLabel]);
+
+  // Opening an offer records where on the list it was, for the way back.
+  const onListClick = (e) => {
+    if (e.target.closest?.('a[href^="/offers/"]')) rememberList({ href: listHref, label: listLabel, scrollY: window.scrollY });
+  };
 
   // First visit: explain and ask for the browser location; fall back to manual choice.
   useEffect(() => {
     if (!locationLoaded || autoTried.current) return;
     autoTried.current = true;
-    if (new URLSearchParams(window.location.search).get("location") === "1") {
-      window.history.replaceState(null, "", "/");
-      setPickerOpen(true);
-    }
     if (location) {
       setGeoAttempted(true);
       return;
@@ -126,7 +156,7 @@ export default function HomeClient() {
     return () => clearTimeout(t);
   }, [searchText]);
 
-  const ready = Boolean(tz && date && geoAttempted);
+  const ready = Boolean(tz && date && geoAttempted && filtersReady);
   const baseParams = useMemo(() => (ready ? buildParams({ location, filters, tz, date }) : null), [ready, location, filters, tz, date]);
   const paramsKey = baseParams?.toString();
 
@@ -160,6 +190,14 @@ export default function HomeClient() {
     load(1, ctrl.signal);
     return () => ctrl.abort();
   }, [paramsKey, load]);
+
+  // Coming back from an offer: once the list has loaded, return to where it was.
+  useEffect(() => {
+    if (feed.status !== "done" || scrollRestored.current) return;
+    scrollRestored.current = true;
+    const y = takeScrollRestore(listHref);
+    if (y) setTimeout(() => window.scrollTo(0, y), 0);
+  }, [feed.status, listHref]);
 
   // Once per page load, ask the server to look for new offers. It returns at
   // once if another visitor triggered a check recently.
@@ -251,7 +289,7 @@ export default function HomeClient() {
         </div>
       </HeaderShell>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-5 pb-24 sm:pb-8">
+      <main onClickCapture={onListClick} className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-5 pb-24 sm:pb-8">
         <div className="space-y-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">

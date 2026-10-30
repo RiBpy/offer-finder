@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getDb } from "@/lib/db/mongo";
@@ -8,6 +7,7 @@ import { categoryLabel, sourceTypeLabel } from "@/lib/constants";
 import { AVAILABILITY_LABELS, discountLabel, formatDateTime, formatMoney, timeAgo } from "@/lib/format";
 import { SimpleHeader, Footer, BottomNav } from "@/components/SiteChrome";
 import { BookmarkButton } from "@/components/OfferCard";
+import { BackToListLink } from "@/components/ReturnLink";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +71,7 @@ export default async function OfferPage({ params }) {
       <SimpleHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 pb-24 sm:pb-10">
         <nav className="mb-4 text-sm">
-          <Link href="/" className="text-emerald-700 hover:underline">← All offers</Link>
+          <BackToListLink className="text-emerald-700 hover:underline" />
         </nav>
 
         {status !== "active" && (

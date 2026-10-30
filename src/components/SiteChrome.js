@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeaderShell from "./HeaderShell";
+import { OffersLink } from "./ReturnLink";
 import RibpyLogo from "./RibpyLogo";
 import ThemeToggle from "./ThemeToggle";
 
@@ -27,7 +28,7 @@ export function SimpleHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
         <nav className="flex items-center gap-1 text-sm font-medium text-slate-600">
-          <Link href="/" className={navLink}>Offers</Link>
+          <OffersLink className={navLink}>Offers</OffersLink>
           <Link href="/saved" className={navLink}>Saved</Link>
           <ThemeToggle className="ml-2" />
         </nav>
@@ -40,9 +41,9 @@ export function BottomNav({ active }) {
   const item = (on) => `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${on ? "text-emerald-700" : "text-slate-500"}`;
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] sm:hidden">
-      <Link href="/" className={item(active === "home")}>
+      <OffersLink className={item(active === "home")}>
         <span aria-hidden="true" className="text-lg">🏠</span> Offers
-      </Link>
+      </OffersLink>
       <Link href="/?location=1" className={item(active === "location")}>
         <span aria-hidden="true" className="text-lg">📍</span> Location
       </Link>
