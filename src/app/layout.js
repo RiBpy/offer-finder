@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import BackToTop from "@/components/BackToTop";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -31,7 +32,10 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col" suppressHydrationWarning>{children}</body>
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        {children}
+        <BackToTop />
+      </body>
     </html>
   );
 }

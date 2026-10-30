@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HeaderShell from "./HeaderShell";
+import RibpyLogo from "./RibpyLogo";
 import ThemeToggle from "./ThemeToggle";
 
 export function Logo() {
@@ -52,16 +53,35 @@ export function BottomNav({ active }) {
   );
 }
 
+// Same glass as the header: translucent white, blurred, over soft brand-coloured
+// glows so the blur has something to show through.
 export function Footer() {
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-white pb-20 sm:pb-0">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-        <p>Offers are collected from public sources and link to the original. Always check terms with the business.</p>
-        <nav className="flex gap-4">
-          <Link href="/privacy" className="hover:text-slate-800">Privacy</Link>
-          <Link href="/terms" className="hover:text-slate-800">Terms</Link>
-          <Link href="/about-bot" className="hover:text-slate-800">Our crawler</Link>
-        </nav>
+    <footer className="relative mt-16 overflow-hidden pb-20 sm:pb-0">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-16 top-2 h-40 w-72 rounded-full bg-emerald-400/25 blur-3xl" />
+        <div className="absolute right-0 top-10 h-40 w-80 rounded-full bg-sky-400/20 blur-3xl" />
+      </div>
+      <div className="relative border-t border-slate-200 bg-white/60 backdrop-blur-xl">
+        <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-500" />
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-slate-500">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Logo />
+            <nav className="-mx-3 flex flex-wrap gap-1 font-medium text-slate-600">
+              <Link href="/privacy" className={navLink}>Privacy</Link>
+              <Link href="/terms" className={navLink}>Terms</Link>
+              <Link href="/about-bot" className={navLink}>Our crawler</Link>
+            </nav>
+          </div>
+          <p className="max-w-2xl">Offers are collected from public sources and link to the original. Always check terms with the business.</p>
+          <div className="flex flex-col gap-3 border-t border-slate-200/70 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()} OfferFinder</p>
+            <p className="flex items-center gap-2">
+              <span>Crafted by</span>
+              <RibpyLogo />
+            </p>
+          </div>
+        </div>
       </div>
     </footer>
   );

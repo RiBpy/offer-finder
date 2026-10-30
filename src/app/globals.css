@@ -211,7 +211,80 @@ html.dark .skeleton {
   animation: icon-spin-in 0.35s cubic-bezier(0.2, 0.7, 0.3, 1.3) both;
 }
 
+/* RiBpy mark: tilts on hover while a shine sweeps across the tile. */
+.ribpy-mark {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1.4);
+}
+.ribpy-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.ribpy-logo:hover .ribpy-mark {
+  transform: rotate(-8deg) scale(1.08);
+}
+.ribpy-logo:hover .ribpy-mark::after {
+  transition: transform 0.6s ease;
+  transform: translateX(120%);
+}
+
+/* Back-to-top button: pops up from the corner, lifts on hover, and its arrow
+   keeps nudging upwards while hovered. */
+.back-to-top {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px) scale(0.6);
+  transition:
+    opacity 0.25s ease,
+    transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1.4),
+    box-shadow 0.25s ease;
+}
+.back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+.back-to-top.is-visible:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -6px rgb(5 150 105 / 0.55);
+}
+.back-to-top.is-visible:active {
+  transform: scale(0.9);
+}
+.back-to-top circle {
+  transition: stroke-dashoffset 0.15s linear;
+}
+@keyframes arrow-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+.back-to-top:hover .back-to-top-arrow {
+  animation: arrow-nudge 0.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .back-to-top,
+  .back-to-top circle {
+    transition: opacity 0.2s ease;
+  }
+  .back-to-top.is-visible:hover,
+  .back-to-top.is-visible:active {
+    transform: none;
+  }
+  .ribpy-logo:hover .ribpy-mark {
+    transform: none;
+  }
+  .ribpy-logo:hover .ribpy-mark::after {
+    transition: none;
+  }
+  .back-to-top-arrow,
   .skeleton,
   .skeleton-card,
   .live-dot,
