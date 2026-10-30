@@ -187,6 +187,25 @@ function validityFilter(p) {
   }
 }
 
+const bankNamesRegex = (bank) => `\\b(${bank.names.map(escapeRegex).join("|")})\\b`;
+
+// Position of an offer's bank in BANKS (same test as the bank filter), or
+// BANKS.length for offers that are not bank card offers.
+const BANK_RANK = {
+  $switch: {
+    branches: BANKS.map((bank, i) => ({
+      case: {
+        $or: [
+          { $eq: ["$sourceName", bank.sourceName] },
+          { $regexMatch: { input: { $ifNull: ["$title", ""] }, regex: bankNamesRegex(bank), options: "i" } },
+        ],
+      },
+      then: i,
+    })),
+    default: BANKS.length,
+  },
+};
+
 function attributeFilters(p, now) {
   const and = [];
   if (p.q) {
@@ -200,7 +219,7 @@ function attributeFilters(p, now) {
   if (p.sourceType) and.push({ sourceType: p.sourceType });
   if (p.bank) {
     const bank = BANKS.find((b) => b.id === p.bank);
-    const named = new RegExp(`\\b(${bank.names.map(escapeRegex).join("|")})\\b`, "i");
+    const named = new RegExp(bankNamesRegex(bank), "i");
     and.push({ $or: [{ sourceName: bank.sourceName }, { title: named }] });
   }
   if (p.availability === "online") and.push({ availabilityType: { $in: ["online", "both"] } });
@@ -262,7 +281,11 @@ function sortStages(sort) {
     case "recent":
       return [{ $sort: { createdAt: -1, _id: -1 } }];
     default:
-      return [{ $addFields: { _k: { $ifNull: ["$publishedAt", "$createdAt"] } } }, { $sort: { _k: -1, _id: -1 } }];
+      // Bank card offers first, in BANKS order, then everything else; newest first within each.
+      return [
+        { $addFields: { _b: BANK_RANK, _k: { $ifNull: ["$publishedAt", "$createdAt"] } } },
+        { $sort: { _b: 1, _k: -1, _id: -1 } },
+      ];
   }
 }
 
