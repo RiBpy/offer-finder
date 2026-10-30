@@ -25,6 +25,63 @@ export function isDefaultFilters(f) {
   return Object.keys(DEFAULT_FILTERS).every((k) => k === "radius" || k === "sort" || f[k] === DEFAULT_FILTERS[k]);
 }
 
+// Filters are kept in the address bar (only those that differ from the
+// defaults), so a filtered list survives reloads and can be returned to.
+const URL_KEYS = {
+  q: "q",
+  category: "category",
+  brandOnly: "brand",
+  validity: "validity",
+  from: "from",
+  to: "to",
+  radius: "radius",
+  national: "national",
+  availability: "availability",
+  sourceType: "source",
+  bank: "bank",
+  minDiscount: "min",
+  sort: "sort",
+  unverified: "unverified",
+};
+const ALLOWED = {
+  category: CATEGORIES.map((c) => c.id),
+  bank: BANKS.map((b) => b.id),
+  sourceType: SOURCE_TYPES.map((s) => s.id),
+  validity: VALIDITY_MODES.map((m) => m.id),
+  sort: SORTS.map((s) => s.id),
+};
+
+export function filtersToSearch(f) {
+  const p = new URLSearchParams();
+  for (const [key, name] of Object.entries(URL_KEYS)) {
+    const v = f[key];
+    if (v === DEFAULT_FILTERS[key]) continue;
+    p.set(name, typeof v === "boolean" ? (v ? "1" : "0") : String(v));
+  }
+  return p.toString();
+}
+
+export function filtersFromSearch(search) {
+  const p = new URLSearchParams(search);
+  const f = { ...DEFAULT_FILTERS };
+  for (const [key, name] of Object.entries(URL_KEYS)) {
+    const v = p.get(name);
+    if (v == null || (ALLOWED[key] && !ALLOWED[key].includes(v))) continue;
+    f[key] = typeof DEFAULT_FILTERS[key] === "boolean" ? v === "1" : v;
+  }
+  return f;
+}
+
+/** Short name for a filtered list, e.g. "Beauty & Personal Care · EBL"; "" when unfiltered. */
+export function describeFilters(f) {
+  const parts = [
+    f.brandOnly ? "Brand offers" : CATEGORIES.find((c) => c.id === f.category)?.label,
+    BANKS.find((b) => b.id === f.bank)?.label,
+    f.q && `“${f.q}”`,
+  ].filter(Boolean);
+  return parts.join(" · ");
+}
+
 const select = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600";
 
 export function CategoryNav({ filters, setFilters, counts }) {

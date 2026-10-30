@@ -4,11 +4,25 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import OfferCard, { OfferCardSkeleton } from "@/components/OfferCard";
 import { useBookmarks } from "@/components/hooks";
+import { rememberList, rememberedList, takeScrollRestore } from "@/lib/return-to";
 
 export default function SavedClient() {
   const { ids, loaded } = useBookmarks();
   const [state, setState] = useState({ loading: true, items: [], error: null });
   const key = ids.join(",");
+
+  // Offer pages link back here ("← Back to Saved offers"), at the same scroll position.
+  useEffect(() => {
+    if (rememberedList()?.href !== "/saved") rememberList({ href: "/saved", label: "Saved offers", scrollY: 0 });
+  }, []);
+  useEffect(() => {
+    if (state.loading) return;
+    const y = takeScrollRestore("/saved");
+    if (y) setTimeout(() => window.scrollTo(0, y), 0);
+  }, [state.loading]);
+  const onListClick = (e) => {
+    if (e.target.closest?.('a[href^="/offers/"]')) rememberList({ href: "/saved", label: "Saved offers", scrollY: window.scrollY });
+  };
 
   useEffect(() => {
     if (!loaded) return;
@@ -42,7 +56,7 @@ export default function SavedClient() {
   const active = state.items.filter((o) => o.effectiveStatus === "active");
   const inactive = state.items.filter((o) => o.effectiveStatus !== "active");
   return (
-    <div className="space-y-8">
+    <div onClickCapture={onListClick} className="space-y-8">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {active.map((o) => (
           <OfferCard key={o.id} offer={o} />
