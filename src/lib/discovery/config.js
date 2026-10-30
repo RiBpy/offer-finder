@@ -56,6 +56,9 @@ export const SEARCHES = [
 const SHOP_SALE_NOTE =
   "This is an online shop's sale or campaign page listing many discounted products. Return at most ONE offer that summarises the sale (e.g. 'Up to 30% off Dabur products at Shajgoj'), with the highest discount shown as discountValue, not one offer per product.";
 
+// Arogga is mainly a pharmacy; only its beauty and personal care sales are wanted.
+const BEAUTY_ONLY_NOTE = `${SHOP_SALE_NOTE} Only consider beauty and personal care products (skincare, haircare, makeup, body care, fragrance, grooming). Ignore medicines, supplements, vitamins, medical devices and baby food, and base the discount only on the beauty products. If the page has no beauty or personal care products on sale, return no offer. Start the title with the sale's own name shown on the page (e.g. 'Beauty Steals: up to 64% off beauty products at Arogga').`;
+
 // Words in a URL that mark hotel, dining and other card-offer pages.
 const OFFERISH = "(offer|discount|deal|hotel|resort|buffet|dine|dining|restaurant|cafe|spa|stay|package)";
 
@@ -134,7 +137,7 @@ export const SITES = [
     name: "Arogga",
     url: "https://www.arogga.com/",
     linkPattern: /^\/category-home\/[a-z0-9-]*campaign$/,
-    note: SHOP_SALE_NOTE,
+    note: BEAUTY_ONLY_NOTE,
     category: "beauty",
     recheckDays: 3,
   },
