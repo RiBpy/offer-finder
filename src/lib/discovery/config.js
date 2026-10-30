@@ -10,6 +10,7 @@
 //             sitemap + sitemapPattern sitemap (or index); matching URL paths are queued
 //             pages                    pages that themselves list many offers
 //             recheckDays              re-read already processed pages after N days
+//             title                    page title for offer pages that have none
 //             adapter                  site-specific reader: "ebl" (ebl.js) or "ific" (ific.js)
 //           Only sites that render offers in plain HTML work (no JavaScript is
 //           executed), and robots.txt is always respected.
@@ -85,6 +86,29 @@ export const SITES = [
     pages: ["https://ificbank.com.bd/discount-offers"],
     adapter: "ific",
     recheckDays: 7,
+  },
+  // Mercantile Bank: each tab lists offer links whose detail pages are bare
+  // fragments without a <title>, so `title` says what the page is.
+  {
+    name: "Mercantile Bank",
+    url: "https://www.mblbd.com/cards-offer",
+    linkPattern: /^\/home\/offerdetails\/\d+$/,
+    title: "Mercantile Bank (MBL) card discount offer",
+    recheckDays: 14,
+  },
+  {
+    name: "Mercantile Bank",
+    url: "https://www.mblbd.com/bogo-offers",
+    linkPattern: /^\/home\/offerdetails\/\d+$/,
+    title: "Mercantile Bank (MBL) card buy-one-get-one offer",
+    recheckDays: 14,
+  },
+  {
+    name: "Mercantile Bank",
+    url: "https://www.mblbd.com/simplePay",
+    linkPattern: /^\/home\/offerdetails\/\d+$/,
+    title: "Mercantile Bank (MBL) SimplePay 0% EMI card offer",
+    recheckDays: 14,
   },
   {
     name: "LankaBangla Finance",

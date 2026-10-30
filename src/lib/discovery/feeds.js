@@ -128,7 +128,7 @@ export function parseSitemap(xml) {
 }
 
 function siteCandidate(url, site, origin) {
-  return { url, title: null, summary: null, publishedAt: null, sourceName: site.name, sourceType: "official_website", origin };
+  return { url, title: site.title ?? null, summary: null, publishedAt: null, sourceName: site.name, sourceType: "official_website", origin };
 }
 
 // Offer pages from a listing page's links.
