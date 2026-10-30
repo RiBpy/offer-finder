@@ -112,7 +112,7 @@ export function aiErrorMessage(err) {
   return err.message;
 }
 
-function userPrompt({ url, title, text, publishedAt, today, region }) {
+function userPrompt({ url, title, text, publishedAt, today, region, note }) {
   const body = text.length > MAX_TEXT_CHARS ? text.slice(0, MAX_TEXT_CHARS) : text;
   return [
     `Region: ${region.name} (country code ${region.country}, timezone ${region.timezone})`,
@@ -120,6 +120,7 @@ function userPrompt({ url, title, text, publishedAt, today, region }) {
     `Page URL: ${url}`,
     `Page title: ${title || "(none)"}`,
     `Published: ${publishedAt ? publishedAt.toISOString().slice(0, 10) : "unknown"}`,
+    ...(note ? [`About this source: ${note}`] : []),
     "",
     "<page_text>",
     body,

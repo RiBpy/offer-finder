@@ -171,10 +171,13 @@ async function processItem(db, item, now) {
     publishedAt,
     today: todayYmd(DISCOVERY_REGION.timezone, now),
     region: DISCOVERY_REGION,
+    note: item.note,
   });
 
   const outcomes = [];
-  for (const x of offers) {
+  for (const found of offers) {
+    // A source with a fixed category (e.g. a beauty shop) overrides the AI's pick.
+    const x = item.category ? { ...found, primaryCategory: item.category } : found;
     try {
       outcomes.push(
         await publishExtracted(db, x, {

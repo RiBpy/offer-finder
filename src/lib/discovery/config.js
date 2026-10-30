@@ -11,6 +11,8 @@
 //             pages                    pages that themselves list many offers
 //             recheckDays              re-read already processed pages after N days
 //             title                    page title for offer pages that have none
+//             note                     extra instruction for the AI reading these pages
+//             category                 category every offer from this site goes in
 //             adapter                  site-specific reader: "ebl" (ebl.js) or "ific" (ific.js)
 //           Only sites that render offers in plain HTML work (no JavaScript is
 //           executed), and robots.txt is always respected.
@@ -44,7 +46,15 @@ export const SEARCHES = [
   "City Bank Amex offer",
   "City Bank American Express discount",
   "IFIC Bank card offer",
+  // kfcbd.com disallows all crawlers in robots.txt, so KFC deals come from news.
+  "KFC Bangladesh offer",
+  "KFC Dhaka deal",
 ];
+
+// Shop sale pages list dozens of discounted products; one offer per page is
+// enough for the directory and keeps the shop from flooding it.
+const SHOP_SALE_NOTE =
+  "This is an online shop's sale or campaign page listing many discounted products. Return at most ONE offer that summarises the sale (e.g. 'Up to 30% off Dabur products at Shajgoj'), with the highest discount shown as discountValue, not one offer per product.";
 
 // Words in a URL that mark hotel, dining and other card-offer pages.
 const OFFERISH = "(offer|discount|deal|hotel|resort|buffet|dine|dining|restaurant|cafe|spa|stay|package)";
@@ -109,6 +119,24 @@ export const SITES = [
     linkPattern: /^\/home\/offerdetails\/\d+$/,
     title: "Mercantile Bank (MBL) SimplePay 0% EMI card offer",
     recheckDays: 14,
+  },
+  // Beauty and personal care shops: the brand and campaign sale pages linked
+  // from their home pages.
+  {
+    name: "Shajgoj",
+    url: "https://shop.shajgoj.com/",
+    linkPattern: /^\/([a-z0-9-]+-deals|product-category\/(offers|[a-z0-9-]*(deal|sale|bogo|buy-1-get-1)[a-z0-9-]*))$/,
+    note: SHOP_SALE_NOTE,
+    category: "beauty",
+    recheckDays: 3,
+  },
+  {
+    name: "Arogga",
+    url: "https://www.arogga.com/",
+    linkPattern: /^\/category-home\/[a-z0-9-]*campaign$/,
+    note: SHOP_SALE_NOTE,
+    category: "beauty",
+    recheckDays: 3,
   },
   {
     name: "LankaBangla Finance",
