@@ -206,6 +206,16 @@ const BANK_RANK = {
   },
 };
 
+// Brand Offers: deals a business runs itself (shops, brands, hotels), as
+// opposed to bank card discounts at a merchant.
+const BANK_SOURCE_NAMES = BANKS.map((b) => b.sourceName);
+const BANK_TITLE = new RegExp(BANKS.map(bankNamesRegex).join("|"), "i");
+const BRAND_FILTER = {
+  sourceName: { $nin: BANK_SOURCE_NAMES },
+  title: { $not: BANK_TITLE },
+  $or: [{ isBrandOffer: true }, { sourceType: "official_website" }],
+};
+
 function attributeFilters(p, now) {
   const and = [];
   if (p.q) {
@@ -226,7 +236,7 @@ function attributeFilters(p, now) {
   if (p.availability === "online_only") and.push({ availabilityType: "online" });
   if (p.availability === "in_store") and.push({ availabilityType: { $in: ["in_store", "both"] } });
   if (p.minDiscount) and.push({ discountType: "percent", discountValue: { $gte: p.minDiscount } });
-  if (p.section === "brand") and.push({ isBrandOffer: true });
+  if (p.section === "brand") and.push(BRAND_FILTER);
   if (p.section === "ending") and.push({ endDate: { $gt: now, $lte: new Date(now.getTime() + 7 * DAY_MS) } });
   if (p.section === "recent") and.push({ createdAt: { $gte: new Date(now.getTime() - 14 * DAY_MS) } });
   return and;
@@ -350,7 +360,7 @@ export function buildCountsPipeline(p, now = new Date()) {
     {
       $facet: {
         all: [{ $count: "n" }],
-        brand: [{ $match: { isBrandOffer: true } }, { $count: "n" }],
+        brand: [{ $match: BRAND_FILTER }, { $count: "n" }],
         byCategory: [{ $unwind: "$categories" }, { $group: { _id: "$categories", n: { $sum: 1 } } }],
       },
     },

@@ -73,7 +73,7 @@ export const SKIPPED_NEWS_HOSTS = [
 // Shop sale pages list dozens of discounted products; one offer per page is
 // enough for the directory and keeps the shop from flooding it.
 const SHOP_SALE_NOTE =
-  "This is an online shop's sale or campaign page listing many discounted products. Return at most ONE offer that summarises the sale (e.g. 'Up to 30% off Dabur products at Shajgoj'), with the highest discount shown as discountValue, not one offer per product.";
+  "This is an online shop's sale or campaign page listing many discounted products. Return at most ONE offer that summarises the sale (e.g. 'Up to 30% off Dabur products at Shajgoj'), with the highest discount shown as discountValue, not one offer per product. When products show only an old and a new price, work out the percentage saving from them.";
 
 // Arogga is mainly a pharmacy; only its beauty and personal care sales are wanted.
 const BEAUTY_ONLY_NOTE = `${SHOP_SALE_NOTE} Only consider beauty and personal care products (skincare, haircare, makeup, body care, fragrance, grooming). Ignore medicines, supplements, vitamins, medical devices and baby food, and base the discount only on the beauty products. If the page has no beauty or personal care products on sale, return no offer. Start the title with the sale's own name shown on the page (e.g. 'Beauty Steals: up to 64% off beauty products at Arogga').`;
@@ -150,6 +150,45 @@ export const SITES = [
     adapter: "daraz",
     recheckDays: 1,
     note: "These are banners from Daraz's home page for ONE store-wide sale campaign. Return at most ONE offer for the campaign as a whole (e.g. 'Daraz 11.11 Sale: up to 90% off'), using what the banner images say: the biggest discount, vouchers, free delivery and dates. Title it with Daraz and the sale's name. Use availabilityType online and scope online. A store-wide sale covers everything, so use primaryCategory electronics with otherCategories fashion, home and beauty, unless the banners are about one kind of product only. If the banners only promote a single product or brand, or nothing says there is a sale, return no offer.",
+  },
+  // Footwear brands: their sale collections and deal pages.
+  {
+    name: "Bata",
+    // "Deal of the Month" is a subset of this list and gave the same offer.
+    pages: ["https://www.batabd.com/collections/discounted-products"],
+    note: SHOP_SALE_NOTE,
+    category: "footwear",
+    recheckDays: 3,
+  },
+  {
+    name: "Lotto",
+    pages: ["https://www.lottobd.com/collections/hot-deals"],
+    note: SHOP_SALE_NOTE,
+    category: "footwear",
+    recheckDays: 3,
+  },
+  {
+    // Lists Apex's store-wide promotions (bKash cashback, cart discounts).
+    name: "Apex",
+    pages: ["https://apex4u.com/super-deals"],
+    category: "footwear",
+    recheckDays: 3,
+  },
+  // Supermarkets. Meena Bazar (meenabazaronline.com) and Prince Bazar
+  // (princebazarbd.com) build their pages with JavaScript, so they cannot be read.
+  {
+    // The running campaign, with its voucher codes and dates.
+    name: "Shwapno",
+    pages: ["https://www.shwapno.com/campaigns"],
+    category: "groceries",
+    recheckDays: 3,
+  },
+  {
+    name: "Agora",
+    pages: ["https://agorasuperstores.com/offerlist"],
+    note: SHOP_SALE_NOTE,
+    category: "groceries",
+    recheckDays: 3,
   },
   // Beauty and personal care shops: the brand and campaign sale pages linked
   // from their home pages.

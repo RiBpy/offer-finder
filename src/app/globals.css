@@ -200,6 +200,29 @@ html.dark .skeleton {
   animation: panel-in 0.22s ease-out both;
 }
 
+/* More filters: a sheet sliding up on phones, the usual panel drop on larger screens. */
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+.sheet-in {
+  animation: sheet-up 0.3s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.backdrop-in {
+  animation: backdrop-in 0.25s ease-out both;
+}
+@media (min-width: 640px) {
+  .sheet-in {
+    animation: panel-in 0.22s ease-out both;
+  }
+}
+
 /* Sun and moon swap with a turn. */
 @keyframes icon-spin-in {
   from {
@@ -290,6 +313,8 @@ html.dark .skeleton {
   .live-dot,
   .card-in,
   .panel-in,
+  .sheet-in,
+  .backdrop-in,
   .icon-spin-in {
     animation: none;
   }
