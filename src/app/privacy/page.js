@@ -25,6 +25,11 @@ export default function Privacy() {
         Like most websites, our hosting provider records technical request data (IP address, time, page requested) for security and rate limiting.
         These logs are kept for a limited period and are not used to profile you.
       </p>
+      <h2>Visitor statistics</h2>
+      <p>
+        We count visits with Vercel Web Analytics to see how many people use the site and which pages they open. It uses no cookies and does not
+        identify you or follow you across other websites.
+      </p>
       <h2>Cookies</h2>
       <p>The public site sets no tracking cookies. The administrator area uses one strictly necessary session cookie.</p>
       <h2>Offer data</h2>

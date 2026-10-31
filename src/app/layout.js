@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         {children}
         <BackToTop />
+        <SiteAnalytics />
       </body>
     </html>
   );
