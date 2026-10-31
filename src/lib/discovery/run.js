@@ -16,9 +16,10 @@ import { aiEnabled, aiErrorMessage, aiModel, extractOffersWithAi, isAiServiceErr
 import { publishExtracted } from "./publish.js";
 import { fetchEblPartner } from "./ebl.js";
 import { fetchIficOffer } from "./ific.js";
+import { fetchDarazCampaign } from "./daraz.js";
 
 // Site-specific readers for items whose offer is not a page of its own.
-const ADAPTER_READERS = { ebl: fetchEblPartner, ific: fetchIficOffer };
+const ADAPTER_READERS = { ebl: fetchEblPartner, ific: fetchIficOffer, daraz: fetchDarazCampaign };
 
 const COLLECT_EVERY_MS = 3 * 3600 * 1000;
 // Hotel and dining pages are read first: they are the offers people look for most.
@@ -137,7 +138,7 @@ async function readItem(db, item, now) {
     const p = await reader(item);
     await recordSourceResult(db, item.url, { ok: p.status < 400, status: p.status, error: p.status >= 400 ? `HTTP ${p.status}` : null, adapter: item.adapter, now });
     if (p.status >= 400) return { result: httpFailure(p.status) };
-    return { page: { url: item.url, title: p.title, text: p.text, publishedAt: p.publishedAt, imageUrl: p.imageUrl, siteName: null } };
+    return { page: { url: item.url, title: p.title, text: p.text, publishedAt: p.publishedAt, imageUrl: p.imageUrl, images: p.images, siteName: null } };
   }
 
   const res = await politeFetch(item.url, { retries: 1 });
@@ -182,6 +183,7 @@ async function processItem(db, item, now) {
     today: todayYmd(DISCOVERY_REGION.timezone, now),
     region: DISCOVERY_REGION,
     note: item.note,
+    images: page.images,
   });
 
   const outcomes = [];

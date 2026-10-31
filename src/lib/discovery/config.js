@@ -142,6 +142,15 @@ export const SITES = [
     title: "Mercantile Bank (MBL) SimplePay 0% EMI card offer",
     recheckDays: 14,
   },
+  {
+    // Store-wide sales only (11.11, Eid, Puja, payday Mega Deals), read from the
+    // home page banners and their images; product and brand banners are skipped.
+    name: "Daraz",
+    url: "https://www.daraz.com.bd/",
+    adapter: "daraz",
+    recheckDays: 1,
+    note: "These are banners from Daraz's home page for ONE store-wide sale campaign. Return at most ONE offer for the campaign as a whole (e.g. 'Daraz 11.11 Sale: up to 90% off'), using what the banner images say: the biggest discount, vouchers, free delivery and dates. Title it with Daraz and the sale's name. Use availabilityType online and scope online. A store-wide sale covers everything, so use primaryCategory electronics with otherCategories fashion, home and beauty, unless the banners are about one kind of product only. If the banners only promote a single product or brand, or nothing says there is a sale, return no offer.",
+  },
   // Beauty and personal care shops: the brand and campaign sale pages linked
   // from their home pages.
   {
