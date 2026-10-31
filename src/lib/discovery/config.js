@@ -174,6 +174,16 @@ export const SITES = [
     category: "footwear",
     recheckDays: 3,
   },
+  {
+    // Othoba (Bashundhara's online shop). Its home and /campaign pages load
+    // with JavaScript; these two sale lists are plain HTML.
+    name: "Othoba",
+    pages: ["https://othoba.com/flash-sale", "https://othoba.com/hot-deals"],
+    note: SHOP_SALE_NOTE,
+    // A marketplace sale, filed like Daraz; the AI's other categories are kept.
+    category: "electronics",
+    recheckDays: 3,
+  },
   // Supermarkets. Meena Bazar (meenabazaronline.com) and Prince Bazar
   // (princebazarbd.com) build their pages with JavaScript, so they cannot be read.
   {
