@@ -4,6 +4,7 @@ export const CATEGORIES = [
   { id: "electronics", label: "Electronics", icon: "📱" },
   { id: "fashion", label: "Clothing & Fashion", icon: "👗" },
   { id: "footwear", label: "Shoes & Footwear", icon: "👟" },
+  { id: "bags", label: "Bags & Accessories", icon: "👜" },
   { id: "food", label: "Restaurants & Food", icon: "🍽️" },
   { id: "hotels", label: "Hotels & Resorts", icon: "🏨" },
   { id: "travel", label: "Travel & Transport", icon: "✈️" },
@@ -16,6 +17,30 @@ export const CATEGORIES = [
 ];
 
 export const CATEGORY_IDS = CATEGORIES.map((c) => c.id);
+
+// Who an offer is for. An offer that names nobody (a store-wide sale, a
+// restaurant discount) is for everyone and shows under each of these.
+export const AUDIENCES = [
+  { id: "men", label: "Men", icon: "👔" },
+  { id: "women", label: "Women", icon: "👠" },
+  { id: "kids", label: "Kids", icon: "🧸" },
+];
+export const AUDIENCE_IDS = AUDIENCES.map((a) => a.id);
+
+// Brands and shops with their own source (discovery/config.js), for the Brands
+// filter. `sourceName` matches the site name there.
+export const STORES = [
+  { id: "daraz", label: "Daraz", sourceName: "Daraz" },
+  { id: "othoba", label: "Othoba", sourceName: "Othoba" },
+  { id: "apex", label: "Apex", sourceName: "Apex" },
+  { id: "bata", label: "Bata", sourceName: "Bata" },
+  { id: "lotto", label: "Lotto", sourceName: "Lotto" },
+  { id: "shajgoj", label: "Shajgoj", sourceName: "Shajgoj" },
+  { id: "arogga", label: "Arogga", sourceName: "Arogga" },
+  { id: "shwapno", label: "Shwapno", sourceName: "Shwapno" },
+  { id: "agora", label: "Agora", sourceName: "Agora" },
+];
+export const STORE_IDS = STORES.map((s) => s.id);
 
 export function categoryLabel(id) {
   return CATEGORIES.find((c) => c.id === id)?.label ?? id;

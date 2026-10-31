@@ -1,6 +1,6 @@
 // Parses public offer queries and builds the MongoDB aggregation pipeline.
 
-import { BANKS, BANK_IDS, CATEGORY_IDS, SOURCE_TYPE_IDS, SORTS, VALIDITY_MODES } from "../constants.js";
+import { AUDIENCE_IDS, BANKS, BANK_IDS, CATEGORY_IDS, SOURCE_TYPE_IDS, SORTS, STORES, STORE_IDS, VALIDITY_MODES } from "../constants.js";
 import { addDaysYmd, dayRangeInZone, isValidTimeZone, isYmd, todayYmd, DAY_MS } from "../dates.js";
 import { isLatitude, isLongitude, roundCoord } from "../geo.js";
 import { cleanText, escapeRegex, normalizeKey } from "../text.js";
@@ -107,6 +107,10 @@ export function parseOfferQuery(sp, now = new Date()) {
   if (sourceType && !SOURCE_TYPE_IDS.includes(sourceType)) errors.sourceType = "Unknown source type";
   const bank = get("bank");
   if (bank && !BANK_IDS.includes(bank)) errors.bank = "Unknown bank";
+  const audience = get("audience");
+  if (audience && !AUDIENCE_IDS.includes(audience)) errors.audience = "Unknown audience";
+  const store = get("store");
+  if (store && !STORE_IDS.includes(store)) errors.store = "Unknown brand";
   const availability = get("availability") || "any";
   if (!["any", "online", "online_only", "in_store"].includes(availability)) errors.availability = "Unknown availability";
   const minDiscount = get("minDiscount") == null ? null : Number(get("minDiscount"));
@@ -141,6 +145,8 @@ export function parseOfferQuery(sp, now = new Date()) {
       brandKey: normalizeKey(get("brand")),
       sourceType,
       bank,
+      audience,
+      store,
       availability,
       minDiscount,
       section,
@@ -216,6 +222,9 @@ const BRAND_FILTER = {
   $or: [{ isBrandOffer: true }, { sourceType: "official_website" }],
 };
 
+// Offers for this audience, plus those for everyone (no audience named).
+const forAudience = (id) => ({ $or: [{ audience: id }, { audience: { $size: 0 } }, { audience: { $exists: false } }] });
+
 function attributeFilters(p, now) {
   const and = [];
   if (p.q) {
@@ -232,6 +241,8 @@ function attributeFilters(p, now) {
     const named = new RegExp(bankNamesRegex(bank), "i");
     and.push({ $or: [{ sourceName: bank.sourceName }, { title: named }] });
   }
+  if (p.audience) and.push(forAudience(p.audience));
+  if (p.store) and.push({ sourceName: STORES.find((s) => s.id === p.store).sourceName });
   if (p.availability === "online") and.push({ availabilityType: { $in: ["online", "both"] } });
   if (p.availability === "online_only") and.push({ availabilityType: "online" });
   if (p.availability === "in_store") and.push({ availabilityType: { $in: ["in_store", "both"] } });
@@ -349,19 +360,32 @@ export function buildOfferPipeline(p, now = new Date()) {
   ];
 }
 
+const perCategory = [{ $unwind: "$categories" }, { $group: { _id: "$categories", n: { $sum: 1 } } }];
+
 /**
- * Offers per category and for Brand Offers under the current location, date
- * and other filters, so each category chip can show what selecting it gives.
+ * Offer counts for every entry of the filter menu (categories, each audience's
+ * categories, brands, banks) under the current location, date and the More
+ * filters, so each entry can show what selecting it gives.
  */
 export function buildCountsPipeline(p, now = new Date()) {
-  const unscoped = { ...p, category: null, section: p.section === "brand" ? null : p.section };
+  const unscoped = {
+    ...p,
+    category: null,
+    audience: null,
+    store: null,
+    bank: null,
+    section: p.section === "brand" ? null : p.section,
+  };
   return [
     ...matchStages(unscoped, now),
     {
       $facet: {
         all: [{ $count: "n" }],
         brand: [{ $match: BRAND_FILTER }, { $count: "n" }],
-        byCategory: [{ $unwind: "$categories" }, { $group: { _id: "$categories", n: { $sum: 1 } } }],
+        byCategory: perCategory,
+        ...Object.fromEntries(AUDIENCE_IDS.map((id) => [`audience_${id}`, [{ $match: forAudience(id) }, ...perCategory]])),
+        byStore: [{ $match: { sourceName: { $in: STORES.map((s) => s.sourceName) } } }, { $group: { _id: "$sourceName", n: { $sum: 1 } } }],
+        byBank: [{ $group: { _id: BANK_RANK, n: { $sum: 1 } } }],
       },
     },
   ];
@@ -369,10 +393,17 @@ export function buildCountsPipeline(p, now = new Date()) {
 
 async function countOffers(db, params, now) {
   const [res] = await db.collection("offers").aggregate(buildCountsPipeline(params, now), { maxTimeMS: 8000 }).toArray();
+  const byId = (rows) => Object.fromEntries((rows ?? []).map((c) => [c._id, c.n]));
+  const stores = byId(res?.byStore);
+  const banks = byId(res?.byBank);
   return {
     all: res?.all?.[0]?.n ?? 0,
     brand: res?.brand?.[0]?.n ?? 0,
-    categories: Object.fromEntries((res?.byCategory ?? []).map((c) => [c._id, c.n])),
+    categories: byId(res?.byCategory),
+    // { men: { fashion: 3, … }, … }: offers for that audience (or everyone) per category.
+    audiences: Object.fromEntries(AUDIENCE_IDS.map((id) => [id, byId(res?.[`audience_${id}`])])),
+    stores: Object.fromEntries(STORES.map((s) => [s.id, stores[s.sourceName] ?? 0])),
+    banks: Object.fromEntries(BANKS.map((b, i) => [b.id, banks[i] ?? 0])),
   };
 }
 

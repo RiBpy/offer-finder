@@ -3,12 +3,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import OfferCard, { OfferCardSkeleton } from "@/components/OfferCard";
 import LocationPicker, { requestBrowserLocation } from "@/components/LocationPicker";
-import { CategoryNav, DEFAULT_FILTERS, FilterBar, describeFilters, filtersFromSearch, filtersToSearch, isDefaultFilters } from "@/components/Filters";
+import {
+  ActiveFilters,
+  DEFAULT_FILTERS,
+  FilterDrawer,
+  FilterMenu,
+  SortSelect,
+  activeFilterCount,
+  describeFilters,
+  filtersFromSearch,
+  filtersToSearch,
+  isDefaultFilters,
+} from "@/components/Filters";
 import { Logo, BottomNav } from "@/components/SiteChrome";
 import ThemeToggle from "@/components/ThemeToggle";
 import HeaderShell from "@/components/HeaderShell";
 import { useDragScroll, useStoredState, useToday } from "@/components/hooks";
-import { categoryLabel } from "@/lib/constants";
 import { rememberList, rememberedList, takeScrollRestore } from "@/lib/return-to";
 
 const PAGE_SIZE = 12;
@@ -30,7 +40,7 @@ function buildParams({ location, filters, tz, date }) {
     if (filters.from) p.set("from", filters.from);
     if (filters.to) p.set("to", filters.to);
   }
-  for (const k of ["q", "category", "sourceType", "bank", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
+  for (const k of ["q", "audience", "category", "store", "sourceType", "bank", "minDiscount"]) if (filters[k]) p.set(k, String(filters[k]).trim());
   if (filters.availability !== "any") p.set("availability", filters.availability);
   if (filters.brandOnly) p.set("section", "brand");
   let sort = filters.sort;
@@ -85,6 +95,8 @@ export default function HomeClient() {
   // Filters come from the address bar, read once on the client before the first load.
   const [filtersReady, setFiltersReady] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const [pickerMessage, setPickerMessage] = useState(null);
   const [locating, setLocating] = useState(false);
   const [geoAttempted, setGeoAttempted] = useState(false);
@@ -115,7 +127,7 @@ export default function HomeClient() {
     return qs ? `/?${qs}` : "/";
   }, [filters]);
   const listName = describeFilters(filters);
-  const listLabel = listName ? `${listName} offers` : "";
+  const listLabel = !listName ? "" : /offers$/.test(listName) ? listName : `${listName} offers`;
   useEffect(() => {
     if (!filtersReady) return;
     if (window.location.pathname + window.location.search !== listHref) window.history.replaceState(null, "", listHref);
@@ -246,7 +258,7 @@ export default function HomeClient() {
     ? new Intl.DateTimeFormat(undefined, { weekday: "long", day: "numeric", month: "long", timeZone: tz }).format(new Date())
     : "";
 
-  const feedTitle = filters.brandOnly ? "Brand offers" : filters.category ? categoryLabel(filters.category) : "All verified offers";
+  const feedTitle = describeFilters(filters) || "All verified offers";
 
   return (
     <>
@@ -294,8 +306,8 @@ export default function HomeClient() {
         </div>
       </HeaderShell>
 
-      <main onClickCapture={onListClick} className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-5 pb-24 sm:pb-8">
-        <div className="space-y-4">
+      <main onClickCapture={onListClick} className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 pb-24 sm:pb-8">
+        <div className="mb-5 space-y-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               Offers {location?.city ? `in ${location.city}` : location ? "near you" : ""} today
@@ -318,105 +330,136 @@ export default function HomeClient() {
               Your browser may ask for permission to share your location. We use it only to find nearby offers and never store it on our servers.
             </p>
           )}
-          <CategoryNav filters={filters} setFilters={setFilters} counts={counts} />
-          <FilterBar filters={filters} setFilters={setFilters} hasCoords={location?.lat != null} hasCity={Boolean(location?.city)} />
         </div>
 
-        {showSections && sectionBase && (
-          <div className="space-y-8">
-            <Section key={`brand-${reloadToken}`} title="Brand Offers" subtitle="Brand-wide sales and campaigns" params={sectionBase} extra="section=brand" />
-            {location?.lat != null && (
-              <Section key={`near-${reloadToken}`} title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" />
-            )}
-            <Section key={`ending-${reloadToken}`} title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" />
-            <Section key={`recent-${reloadToken}`} title="Recently Added" params={sectionBase} extra="section=recent" />
-          </div>
-        )}
-
-        <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="min-h-[75vh] space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              {discovery.status === "checking" && (
-                <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
-                  <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
-                  Checking for new offers…
-                </span>
-              )}
-              {discovery.status === "done" && discovery.found > 0 && (
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
-                  ✓ {discovery.found} new {discovery.found === 1 ? "offer" : "offers"} found
-                </span>
-              )}
-              {feed.status === "done" && <span>{feed.total} {feed.total === 1 ? "offer" : "offers"}</span>}
+        {/* Large screens: the filter menu is a sidebar; phones and tablets open it as a drawer. */}
+        <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8">
+          <aside aria-label="Filters" className="hidden lg:block">
+            <div className="no-scrollbar sticky top-[86px] max-h-[calc(100vh-102px)] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 pb-4">
+              <FilterMenu filters={filters} setFilters={setFilters} counts={counts} hasCoords={location?.lat != null} hasCity={Boolean(location?.city)} />
             </div>
-          </div>
+          </aside>
 
-          {feed.status === "error" && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
-              {feed.error}{" "}
-              <button type="button" className="font-semibold underline" onClick={() => load(1)}>
-                Try again
-              </button>
-            </div>
-          )}
-
-          {(feed.status === "loading" || feed.status === "idle") && (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <OfferCardSkeleton key={i} index={i} />
-              ))}
-            </div>
-          )}
-
-          {feed.status !== "loading" && feed.status !== "idle" && feed.items.length > 0 && (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-              {feed.items.map((o, i) => (
-                <OfferCard key={o.id} offer={o} index={i % PAGE_SIZE} />
-              ))}
-            </div>
-          )}
-
-          {feed.status === "done" && feed.items.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
-              <p className="font-medium text-slate-800">
-                {location ? "No verified offers found in this area today." : "No verified nationwide or online offers right now."}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                Try expanding your search radius, selecting another category, or clearing filters.
-              </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {!isDefaultFilters(filters) && (
-                  <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, radius: filters.radius })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
-                    Clear all filters
-                  </button>
-                )}
-                {location?.lat != null && filters.radius !== "country" && (
-                  <button type="button" onClick={() => setFilters((f) => ({ ...f, radius: "50" }))} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
-                    Search within 50 km
-                  </button>
-                )}
-                <button type="button" onClick={() => setPickerOpen(true)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
-                  Change location
-                </button>
-              </div>
-            </div>
-          )}
-
-          {feed.hasMore && feed.status !== "loading" && (
-            <div className="flex justify-center">
+          <div className="min-w-0 space-y-8">
+            <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 py-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
               <button
                 type="button"
-                disabled={feed.status === "loading-more"}
-                onClick={() => load(feed.page + 1)}
-                className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60"
+                onClick={() => setDrawerOpen(true)}
+                className="flex shrink-0 items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-emerald-600/50 active:scale-95 lg:hidden"
               >
-                {feed.status === "loading-more" ? "Loading…" : "Load more offers"}
+                <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+                Filters
+                {activeFilterCount(filters) > 0 && (
+                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-700 px-1.5 text-xs text-white">{activeFilterCount(filters)}</span>
+                )}
               </button>
+              <ActiveFilters filters={filters} setFilters={setFilters} />
+              <SortSelect className="ml-auto pl-2" filters={filters} setFilters={setFilters} hasCoords={location?.lat != null} />
             </div>
-          )}
-        </section>
+
+            {showSections && sectionBase && (
+              <div className="space-y-8">
+                <Section key={`brand-${reloadToken}`} title="Brand Offers" subtitle="Sales and campaigns run by brands and shops" params={sectionBase} extra="section=brand" />
+                {location?.lat != null && (
+                  <Section key={`near-${reloadToken}`} title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" />
+                )}
+                <Section key={`ending-${reloadToken}`} title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" />
+                <Section key={`recent-${reloadToken}`} title="Recently Added" params={sectionBase} extra="section=recent" />
+              </div>
+            )}
+
+            <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="min-h-[75vh] space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  {discovery.status === "checking" && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
+                      <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
+                      Checking for new offers…
+                    </span>
+                  )}
+                  {discovery.status === "done" && discovery.found > 0 && (
+                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
+                      ✓ {discovery.found} new {discovery.found === 1 ? "offer" : "offers"} found
+                    </span>
+                  )}
+                  {feed.status === "done" && <span>{feed.total} {feed.total === 1 ? "offer" : "offers"}</span>}
+                </div>
+              </div>
+
+              {feed.status === "error" && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+                  {feed.error}{" "}
+                  <button type="button" className="font-semibold underline" onClick={() => load(1)}>
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              {(feed.status === "loading" || feed.status === "idle") && (
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <OfferCardSkeleton key={i} index={i} />
+                  ))}
+                </div>
+              )}
+
+              {feed.status !== "loading" && feed.status !== "idle" && feed.items.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                  {feed.items.map((o, i) => (
+                    <OfferCard key={o.id} offer={o} index={i % PAGE_SIZE} />
+                  ))}
+                </div>
+              )}
+
+              {feed.status === "done" && feed.items.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+                  <p className="font-medium text-slate-800">
+                    {location ? "No verified offers found in this area today." : "No verified nationwide or online offers right now."}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Try expanding your search radius, selecting another category, or clearing filters.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    {!isDefaultFilters(filters) && (
+                      <button type="button" onClick={() => setFilters({ ...DEFAULT_FILTERS, radius: filters.radius })} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+                        Clear all filters
+                      </button>
+                    )}
+                    {location?.lat != null && filters.radius !== "country" && (
+                      <button type="button" onClick={() => setFilters((f) => ({ ...f, radius: "50" }))} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+                        Search within 50 km
+                      </button>
+                    )}
+                    <button type="button" onClick={() => setPickerOpen(true)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium">
+                      Change location
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {feed.hasMore && feed.status !== "loading" && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    disabled={feed.status === "loading-more"}
+                    onClick={() => load(feed.page + 1)}
+                    className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 disabled:opacity-60"
+                  >
+                    {feed.status === "loading-more" ? "Loading…" : "Load more offers"}
+                  </button>
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
       </main>
+
+      <FilterDrawer open={drawerOpen} onClose={closeDrawer} total={feed.status === "done" ? feed.total : null}>
+        <FilterMenu filters={filters} setFilters={setFilters} counts={counts} hasCoords={location?.lat != null} hasCity={Boolean(location?.city)} onPick={closeDrawer} />
+      </FilterDrawer>
 
       <LocationPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={selectLocation} current={location} message={pickerMessage} />
       <BottomNav active="home" />

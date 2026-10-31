@@ -217,6 +217,15 @@ html.dark .skeleton {
 .backdrop-in {
   animation: backdrop-in 0.25s ease-out both;
 }
+/* The filter drawer on phones and tablets slides in from the left. */
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+.drawer-in {
+  animation: drawer-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
 @media (min-width: 640px) {
   .sheet-in {
     animation: panel-in 0.22s ease-out both;
@@ -314,6 +323,7 @@ html.dark .skeleton {
   .card-in,
   .panel-in,
   .sheet-in,
+  .drawer-in,
   .backdrop-in,
   .icon-spin-in {
     animation: none;

@@ -184,6 +184,14 @@ export const SITES = [
     category: "electronics",
     recheckDays: 3,
   },
+  {
+    // Apex bag collections; a sale on them becomes one offer per collection.
+    name: "Apex",
+    pages: ["https://apex4u.com/category/men-bags", "https://apex4u.com/category/women-bags", "https://apex4u.com/category/kids-bags"],
+    note: `${SHOP_SALE_NOTE} If no bag on the page is discounted, return no offer. Set audience to who the collection is for (men, women or kids).`,
+    category: "bags",
+    recheckDays: 3,
+  },
   // Supermarkets. Meena Bazar (meenabazaronline.com) and Prince Bazar
   // (princebazarbd.com) build their pages with JavaScript, so they cannot be read.
   {

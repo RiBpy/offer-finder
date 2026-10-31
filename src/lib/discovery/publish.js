@@ -8,7 +8,7 @@ import { DAY_MS, endOfDayInZone, isYmd } from "../dates.js";
 import { findDuplicateCandidates } from "../dedupe.js";
 import { ValidationError } from "../offers/model.js";
 import { createOffer } from "../offers/repository.js";
-import { cleanText, normalizeKey, slugify } from "../text.js";
+import { cleanText, inferAudience, normalizeKey, slugify } from "../text.js";
 import { log } from "../log.js";
 import { geocodeAddress } from "./geocode.js";
 
@@ -69,6 +69,7 @@ export function toOfferInput(x, ctx) {
     isBrandOffer: Boolean(x.brandName) && !x.businessName,
     primaryCategory: CATEGORY_IDS.includes(x.primaryCategory) ? x.primaryCategory : "services",
     categories: withHotelCategory((x.otherCategories || []).filter((c) => CATEGORY_IDS.includes(c)).slice(0, 3), x),
+    audience: x.audience?.length ? x.audience : inferAudience([x.title, x.description, x.terms, x.businessName].join(" ")),
     tags: ["auto"],
     discountType,
     discountValue: discountType === "percent" || discountType === "amount" ? discountValue : null,
