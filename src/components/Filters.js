@@ -86,6 +86,7 @@ const SHOP_FOR = [
     id: "men",
     audience: "men",
     label: "Men",
+    allLabel: "All men's offers",
     icon: "👔",
     items: [
       ["fashion", "Clothing"],
@@ -98,6 +99,7 @@ const SHOP_FOR = [
     id: "women",
     audience: "women",
     label: "Women",
+    allLabel: "All women's offers",
     icon: "👠",
     items: [
       ["fashion", "Clothing"],
@@ -110,6 +112,7 @@ const SHOP_FOR = [
     id: "kids",
     audience: "kids",
     label: "Kids",
+    allLabel: "All kids' offers",
     icon: "🧸",
     items: [
       ["fashion", "Clothing"],
@@ -139,7 +142,7 @@ export function describeFilters(f) {
   const group = SHOP_FOR.find((g) => g.audience === f.audience && g.audience);
   const sub = group?.items.find(([id]) => id === f.category)?.[1];
   const parts = [
-    group ? (sub ? `${group.label} · ${sub}` : `${group.label}'s offers`) : categoryOf(f.category)?.label,
+    group ? (sub ? `${group.label} · ${sub}` : group.allLabel.replace(/^All (\w)/, (_, c) => c.toUpperCase())) : categoryOf(f.category)?.label,
     f.brandOnly && !f.store && "Brand offers",
     STORES.find((s) => s.id === f.store)?.label,
     BANKS.find((b) => b.id === f.bank) && `${BANKS.find((b) => b.id === f.bank).label} card offers`,
@@ -204,8 +207,9 @@ function Item({ active, onClick, children, count, indent = false }) {
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors ${indent ? "pl-4" : ""} ${
-        active ? "bg-emerald-50 font-semibold text-emerald-800" : "text-slate-700 hover:bg-slate-100"
+      // The same weight whether chosen or not: bold text is wider and could wrap, shifting the menu.
+      className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${indent ? "pl-4" : ""} ${
+        active ? "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20" : "text-slate-700 hover:bg-slate-100"
       } ${count === 0 && !active ? "opacity-50" : ""}`}
     >
       {children}
@@ -291,7 +295,7 @@ export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, on
         <Accordion key={g.id} id={g.id} icon={g.icon} label={g.label} open={open.has(g.id)} onToggle={() => toggle(g.id)} active={groupActive(g)}>
           {g.audience && (
             <Item indent active={isShop(g.audience, "")} onClick={() => pickShop(g.audience, "")}>
-              All {g.label.toLowerCase()}&apos;s offers
+              {g.allLabel}
             </Item>
           )}
           {g.items.map(([cat, label]) => (
