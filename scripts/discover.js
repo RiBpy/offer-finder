@@ -20,7 +20,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const db = await getDb();
 try {
-  const total = { processed: 0, failed: 0, published: 0, held: 0, duplicates: 0, inputTokens: 0, outputTokens: 0 };
+  const total = { processed: 0, unchanged: 0, failed: 0, published: 0, held: 0, duplicates: 0, inputTokens: 0, outputTokens: 0 };
   let processed;
   for (let attempt = 0; ; attempt++) {
     const run = await runDiscovery(db, {
@@ -44,7 +44,7 @@ try {
   }
 
   console.log(
-    `Pages read: ${total.processed} (failed ${total.failed}). Offers published: ${total.published}, held back: ${total.held}, duplicates: ${total.duplicates}.`,
+    `Pages read: ${total.processed} (failed ${total.failed}), unchanged and skipped: ${total.unchanged}. Offers published: ${total.published}, held back: ${total.held}, duplicates: ${total.duplicates}.`,
   );
   console.log(`AI (${aiProvider()} / ${aiModel()}) tokens: ${total.inputTokens} in / ${total.outputTokens} out. Pages still queued: ${processed.queued}`);
   if (processed.aiError) {

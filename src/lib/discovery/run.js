@@ -3,6 +3,7 @@
 // offers it finds. Work is split into short, resumable steps with a time
 // budget so it fits serverless limits; state lives in MongoDB.
 
+import crypto from "node:crypto";
 import { extractFromHtml, visibleText } from "../extract/html.js";
 import { politeFetch } from "../sources/fetcher.js";
 import { recordSourceResult } from "../sources/health.js";
@@ -164,6 +165,15 @@ async function processItem(db, item, now) {
   if (result) return result;
 
   const { url, text, publishedAt } = page;
+  // A re-checked page whose text has not changed would get the same answer, so
+  // skip the AI: keep the earlier result and re-confirm the offers it gave.
+  const contentHash = crypto.createHash("sha256").update(`${page.title || ""}\n${text}`).digest("hex").slice(0, 32);
+  if (item.contentHash === contentHash && item.resultStatus) {
+    const own = canonicalizeUrl(url);
+    if (own) await refreshListedOffers(db, [own], now);
+    return { status: item.resultStatus, unchanged: true, model: item.model };
+  }
+
   const { offers, usage, refused, model } = await extractOffersWithAi({
     url,
     title: page.title,
@@ -195,17 +205,20 @@ async function processItem(db, item, now) {
       outcomes.push({ outcome: "error", reason: err.message });
     }
   }
+  const status = refused ? "refused" : offers.length ? "done" : "no_offer";
   return {
-    status: refused ? "refused" : offers.length ? "done" : "no_offer",
+    status,
     outcomes,
     tokens: usage ? { input: usage.input_tokens, output: usage.output_tokens } : null,
     model,
+    // Refusals are not remembered, so the page is read again next time.
+    ...(refused ? {} : { contentHash, resultStatus: status }),
   };
 }
 
 /** Processes queued pages until the deadline or `maxItems`. */
 export async function processQueue(db, { deadline, maxItems = 50 } = {}) {
-  const summary = { processed: 0, published: 0, held: 0, duplicates: 0, failed: 0, inputTokens: 0, outputTokens: 0 };
+  const summary = { processed: 0, unchanged: 0, published: 0, held: 0, duplicates: 0, failed: 0, inputTokens: 0, outputTokens: 0 };
   while (summary.processed < maxItems && Date.now() < deadline) {
     const now = new Date();
     const item = await claimNext(db, now);
@@ -229,10 +242,16 @@ export async function processQueue(db, { deadline, maxItems = 50 } = {}) {
       result = { status: retry ? "queued" : "failed", error: err.message };
       log.warn("discovery item failed", { url: item.url, attempt: item.attempts, error: err.message });
     }
+    const { unchanged, ...fields } = result;
     await db.collection("discovery_items").updateOne(
       { _id: item._id },
-      { $set: { ...result, processedAt: new Date(), model: result.model ?? aiModel() }, $unset: { startedAt: "" } },
+      { $set: { ...fields, processedAt: new Date(), model: fields.model ?? aiModel() }, $unset: { startedAt: "" } },
     );
+    // Unchanged pages cost no AI call, so they do not count towards maxItems.
+    if (unchanged) {
+      summary.unchanged++;
+      continue;
+    }
     summary.processed++;
     if (result.status === "failed") summary.failed++;
     for (const o of result.outcomes || []) {
