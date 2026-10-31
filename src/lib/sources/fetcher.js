@@ -54,9 +54,9 @@ async function assertPublicUrl(url) {
   if (addrs.some((a) => isPrivateIp(a.address))) throw new FetchError("Private addresses are not allowed", { code: "PRIVATE_HOST" });
 }
 
-async function readLimited(res) {
+async function readLimited(res, binary = false) {
   const reader = res.body?.getReader();
-  if (!reader) return "";
+  if (!reader) return binary ? Buffer.alloc(0) : "";
   const chunks = [];
   let size = 0;
   for (;;) {
@@ -69,10 +69,11 @@ async function readLimited(res) {
     }
     chunks.push(value);
   }
-  return new TextDecoder("utf-8", { fatal: false }).decode(Buffer.concat(chunks.map((c) => Buffer.from(c))));
+  const bytes = Buffer.concat(chunks.map((c) => Buffer.from(c)));
+  return binary ? bytes : new TextDecoder("utf-8", { fatal: false }).decode(bytes);
 }
 
-async function rawFetch(url, { timeoutMs = 10000, accept = "text/html,application/xhtml+xml", method = "GET", body: payload, headers } = {}) {
+async function rawFetch(url, { timeoutMs = 10000, accept = "text/html,application/xhtml+xml", method = "GET", body: payload, headers, binary } = {}) {
   let current = url;
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     await assertPublicUrl(current);
@@ -99,7 +100,7 @@ async function rawFetch(url, { timeoutMs = 10000, accept = "text/html,applicatio
       payload = undefined;
       continue;
     }
-    const body = await readLimited(res);
+    const body = await readLimited(res, binary);
     return { status: res.status, url: current, headers: res.headers, body };
   }
   throw new FetchError("Too many redirects", { code: "REDIRECTS" });
@@ -177,16 +178,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * Fetches a source page politely. Returns { status, url, body, headers }.
  * Throws FetchError with code ROBOTS_DISALLOWED when robots.txt forbids it.
  * `method`, `body` and `headers` are for sites that load offer details with a
- * form post (see discovery/ebl.js).
+ * form post (see discovery/ebl.js). `binary` returns the body as a Buffer
+ * (banner images, see discovery/daraz.js).
  */
-export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeoutMs, accept, method, body, headers } = {}) {
+export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeoutMs, accept, method, body, headers, binary } = {}) {
   if (!(await robotsAllows(url))) {
     throw new FetchError("robots.txt disallows fetching this URL", { code: "ROBOTS_DISALLOWED" });
   }
   let attempt = 0;
   for (;;) {
     try {
-      const res = await rawFetch(url, { timeoutMs, ...(accept ? { accept } : {}), method, body, headers });
+      const res = await rawFetch(url, { timeoutMs, ...(accept ? { accept } : {}), method, body, headers, binary });
       if ((res.status >= 500 || res.status === 429) && attempt < retries) throw new FetchError(`HTTP ${res.status}`, { status: res.status, retryable: true });
       return res;
     } catch (err) {

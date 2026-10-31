@@ -7,6 +7,7 @@ import { politeFetch } from "../sources/fetcher.js";
 import { canonicalizeUrl } from "../dedupe.js";
 import { cleanText } from "../text.js";
 import { SKIPPED_NEWS_HOSTS } from "./config.js";
+import { darazCandidates } from "./daraz.js";
 import { eblCandidates } from "./ebl.js";
 import { ificCandidates } from "./ific.js";
 
@@ -186,6 +187,7 @@ async function sitemapCandidates(site) {
 export async function fetchSiteCandidates(site) {
   if (site.adapter === "ebl") return eblCandidates(site);
   if (site.adapter === "ific") return ificCandidates(site);
+  if (site.adapter === "daraz") return darazCandidates(site);
   const out = [];
   if (site.url && site.linkPattern) out.push(...(await listingCandidates(site)));
   if (site.sitemap && site.sitemapPattern) out.push(...(await sitemapCandidates(site)));

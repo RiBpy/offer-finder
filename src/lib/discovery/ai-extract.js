@@ -112,7 +112,7 @@ export function aiErrorMessage(err) {
   return err.message;
 }
 
-function userPrompt({ url, title, text, publishedAt, today, region, note }) {
+function userPrompt({ url, title, text, publishedAt, today, region, note, images }) {
   const body = text.length > MAX_TEXT_CHARS ? text.slice(0, MAX_TEXT_CHARS) : text;
   return [
     `Region: ${region.name} (country code ${region.country}, timezone ${region.timezone})`,
@@ -121,6 +121,7 @@ function userPrompt({ url, title, text, publishedAt, today, region, note }) {
     `Page title: ${title || "(none)"}`,
     `Published: ${publishedAt ? publishedAt.toISOString().slice(0, 10) : "unknown"}`,
     ...(note ? [`About this source: ${note}`] : []),
+    ...(images?.length ? [`${images.length} banner image(s) from the page are attached; read their text as part of the page.`] : []),
     "",
     "<page_text>",
     body,
@@ -181,9 +182,10 @@ async function extractWithGemini(page) {
 }
 
 async function extractWithGeminiModel(page, model, apiKey) {
+  const images = (page.images || []).map((img) => ({ inlineData: { mimeType: img.mimeType, data: img.data.toString("base64") } }));
   const response = await geminiClient(apiKey).models.generateContent({
     model,
-    contents: userPrompt(page),
+    contents: images.length ? [{ role: "user", parts: [{ text: userPrompt(page) }, ...images] }] : userPrompt(page),
     config: {
       systemInstruction: SYSTEM,
       responseMimeType: "application/json",
@@ -221,7 +223,15 @@ async function extractWithClaude(page) {
     max_tokens: MAX_OUTPUT_TOKENS,
     output_config: { effort: "low", format: zodOutputFormat(ResultSchema) },
     system: SYSTEM,
-    messages: [{ role: "user", content: userPrompt(page) }],
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: userPrompt(page) },
+          ...(page.images || []).map((img) => ({ type: "image", source: { type: "base64", media_type: img.mimeType, data: img.data.toString("base64") } })),
+        ],
+      },
+    ],
   });
   if (response.stop_reason === "refusal") return { offers: [], usage: response.usage, refused: true };
   return { offers: response.parsed_output?.offers ?? [], usage: response.usage, refused: false };
