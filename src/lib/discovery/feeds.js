@@ -6,6 +6,7 @@ import { decodeEntities } from "../extract/html.js";
 import { politeFetch } from "../sources/fetcher.js";
 import { canonicalizeUrl } from "../dedupe.js";
 import { cleanText } from "../text.js";
+import { SKIPPED_NEWS_HOSTS } from "./config.js";
 import { eblCandidates } from "./ebl.js";
 import { ificCandidates } from "./ific.js";
 
@@ -114,7 +115,13 @@ export async function fetchSearchCandidates(query) {
         origin: `bing:${query}`,
       }),
     )
-    .filter(Boolean);
+    .filter((c) => c && !isSkippedNewsHost(c.url));
+}
+
+/** True for articles on outlets in SKIPPED_NEWS_HOSTS (or their subdomains). */
+export function isSkippedNewsHost(url) {
+  const host = new URL(url).hostname.toLowerCase();
+  return SKIPPED_NEWS_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
 }
 
 const MAX_SITEMAP_URLS = 300;

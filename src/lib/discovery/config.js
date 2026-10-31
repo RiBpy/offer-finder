@@ -23,14 +23,11 @@ export const DISCOVERY_REGION = {
   name: "Bangladesh",
 };
 
-export const FEEDS = [
-  { url: "https://www.thedailystar.net/rss.xml", name: "The Daily Star" },
-  { url: "https://www.thedailystar.net/business/rss.xml", name: "The Daily Star" },
-  { url: "https://www.tbsnews.net/rss.xml", name: "The Business Standard" },
-  { url: "https://en.prothomalo.com/feed", name: "Prothom Alo English" },
-  { url: "https://www.prothomalo.com/feed", name: "Prothom Alo" },
-  { url: "https://www.jagonews24.com/rss/rss.xml", name: "Jago News 24" },
-];
+// Feeds and searches are kept only while they find offers: news is read by the
+// AI one article at a time, so a source that yields nothing just uses quota.
+// Dropped for finding no offers: The Daily Star (both feeds), The Business
+// Standard, Prothom Alo English and Jago News feeds; the "ছাড় অফার" search.
+export const FEEDS = [{ url: "https://www.prothomalo.com/feed", name: "Prothom Alo" }];
 
 export const SEARCHES = [
   "discount offer Dhaka",
@@ -39,7 +36,7 @@ export const SEARCHES = [
   "card offer discount Bangladesh",
   "buy one get one Dhaka",
   "sale offer Bangladesh brand",
-  "ছাড় অফার",
+  "ডিসকাউন্ট",
   "মূল্যছাড়",
   "ক্যাশব্যাক অফার",
   // City Bank lists its offers only in a JavaScript app, so they are found through news.
@@ -49,6 +46,28 @@ export const SEARCHES = [
   // kfcbd.com disallows all crawlers in robots.txt, so KFC deals come from news.
   "KFC Bangladesh offer",
   "KFC Dhaka deal",
+];
+
+// Bangla searches mostly return Indian (West Bengal) outlets writing about
+// Flipkart, Amazon and Indian car deals. Their articles are dropped before the
+// AI reads them. Matched against the article's host and its parent domains.
+export const SKIPPED_NEWS_HOSTS = [
+  "msn.com",
+  "news18.com",
+  "91mobiles.com",
+  "digit.in",
+  "abplive.com",
+  "aajtak.in",
+  "asianetnews.com",
+  "bartamanpatrika.com",
+  "anandabazar.com",
+  "sangbadpratidin.in",
+  "eisamay.com",
+  "tv9bangla.com",
+  "zeenews.india.com",
+  "hindustantimes.com",
+  "indianexpress.com",
+  "thewall.in",
 ];
 
 // Shop sale pages list dozens of discounted products; one offer per page is
