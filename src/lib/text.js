@@ -39,3 +39,19 @@ export function normalizeKey(s) {
   const t = cleanText(s);
   return t ? t.toLowerCase() : null;
 }
+
+// Words that say who an offer is for, in English and Bangla. "Boys" and
+// "girls" are children's wear in shop listings.
+const AUDIENCE_WORDS = {
+  men: /\b(men|men's|mens|gents?|gentlemen|male)\b|পুরুষ/i,
+  women: /\b(women|women's|womens|ladies|lady|lady's|ladys|female)\b|নারী|মহিলা/i,
+  kids: /\b(kids?|kid's|children|child|baby|babies|boys?|girls?|toddlers?|infants?)\b|শিশু|বাচ্চা/i,
+};
+
+/** Who a text is about (["men", "women", "kids"] subset); empty when it names nobody. */
+export function inferAudience(text) {
+  const t = text || "";
+  return Object.entries(AUDIENCE_WORDS)
+    .filter(([, re]) => re.test(t))
+    .map(([id]) => id);
+}

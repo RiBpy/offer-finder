@@ -1,4 +1,5 @@
 import {
+  AUDIENCE_IDS,
   AVAILABILITY_TYPES,
   CATEGORY_IDS,
   DISCOUNT_TYPES,
@@ -83,6 +84,8 @@ export function normalizeOfferInput(input, { now = new Date() } = {}) {
   if (!CATEGORY_IDS.includes(primaryCategory)) e.primaryCategory = "Choose a primary category";
   const extra = (Array.isArray(input.categories) ? input.categories : []).filter((c) => CATEGORY_IDS.includes(c));
   const categories = [...new Set([primaryCategory, ...extra])].filter(Boolean);
+  // Empty means the offer is for everyone.
+  const audience = [...new Set((Array.isArray(input.audience) ? input.audience : []).filter((a) => AUDIENCE_IDS.includes(a)))];
 
   const availabilityType = input.availabilityType;
   if (!AVAILABILITY_TYPES.includes(availabilityType)) e.availabilityType = "Choose online, in-store or both";
@@ -176,6 +179,7 @@ export function normalizeOfferInput(input, { now = new Date() } = {}) {
       isBrandOffer: Boolean(input.isBrandOffer),
       categories,
       primaryCategory,
+      audience,
       tags: stringList(input.tags),
       discountType,
       discountValue: discountType === "none" ? null : discountValue,

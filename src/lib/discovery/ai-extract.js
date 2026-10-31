@@ -10,7 +10,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { ApiError as GeminiApiError, GoogleGenAI } from "@google/genai";
 import { z } from "zod";
-import { AVAILABILITY_TYPES, CATEGORY_IDS, DISCOUNT_TYPES, SCOPES } from "../constants.js";
+import { AUDIENCE_IDS, AVAILABILITY_TYPES, CATEGORY_IDS, DISCOUNT_TYPES, SCOPES } from "../constants.js";
 
 // Bank pages can list hundreds of merchants, so allow long pages.
 const MAX_TEXT_CHARS = 40000;
@@ -49,6 +49,9 @@ const OfferSchema = z.object({
   otherCategories: z
     .array(z.string())
     .describe(`Other categories that also fit, from: ${CATEGORY_IDS.join(", ")}. Offers at hotels or resorts always include "hotels".`),
+  audience: z
+    .array(z.string())
+    .describe(`Who the offer is for, from: ${AUDIENCE_IDS.join(", ")}. Only when the page says so (e.g. men's shoes, ladies' bags, kids' wear); empty for everyone.`),
   discountType: oneOf(DISCOUNT_TYPES),
   discountValue: z.number().nullable().describe("Percent (0-100) for percent, money amount for amount; the maximum when a range is given"),
   discountText: nullableString.describe("The discount as stated, e.g. 'Up to 15% off'"),
