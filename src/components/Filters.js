@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BANKS, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, VALIDITY_MODES } from "@/lib/constants";
 import { useDragScroll } from "./hooks";
 
@@ -144,6 +144,21 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
     setFilters((f) => ({ ...f, [k]: v }));
   };
   const clear = (...keys) => () => setFilters((f) => ({ ...f, ...Object.fromEntries(keys.map((k) => [k, DEFAULT_FILTERS[k]])) }));
+  // Choosing anything in More filters applies it and closes the panel.
+  const setMore = (k) => (e) => {
+    set(k)(e);
+    setOpen(false);
+  };
+  const clearMore = (...keys) => () => {
+    clear(...keys)();
+    setOpen(false);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   const radiusOptions = RADIUS_OPTIONS.filter((r) => (r.id === "city" ? hasCity : r.id === "country" ? true : hasCoords));
   const extraCount = ["availability", "sourceType", "minDiscount"].filter((k) => filters[k] !== DEFAULT_FILTERS[k]).length + (filters.unverified ? 1 : 0) + (filters.national ? 0 : 1);
@@ -207,44 +222,70 @@ export function FilterBar({ filters, setFilters, hasCoords, hasCity }) {
       </div>
 
       {open && (
-        <div id="more-filters" className="panel-in grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="text-sm">
-            <span className="mb-1 block font-medium text-slate-700">Where to redeem</span>
-            <ClearableSelect className="w-full" label="where to redeem" value={filters.availability} defaultValue={DEFAULT_FILTERS.availability} onChange={set("availability")} onClear={clear("availability")}>
-              <option value="any">Online or in-store</option>
-              <option value="in_store">In-store</option>
-              <option value="online">Available online</option>
-              <option value="online_only">Online only</option>
-            </ClearableSelect>
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block font-medium text-slate-700">Source</span>
-            <ClearableSelect className="w-full" label="source" value={filters.sourceType} onChange={set("sourceType")} onClear={clear("sourceType")}>
-              <option value="">Any source</option>
-              {SOURCE_TYPES.map((s) => (
-                <option key={s.id} value={s.id}>{s.label}</option>
-              ))}
-            </ClearableSelect>
-          </label>
-          <label className="text-sm">
-            <span className="mb-1 block font-medium text-slate-700">Minimum discount</span>
-            <ClearableSelect className="w-full" label="minimum discount" value={filters.minDiscount} onChange={set("minDiscount")} onClear={clear("minDiscount")}>
-              <option value="">Any</option>
-              {[10, 20, 30, 40, 50, 70].map((n) => (
-                <option key={n} value={n}>{n}% or more</option>
-              ))}
-            </ClearableSelect>
-          </label>
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
-            <input type="checkbox" checked={filters.national} onChange={set("national")} className="h-4 w-4 accent-emerald-700" />
-            Include nationwide and online-only deals
-          </label>
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
-            <input type="checkbox" checked={filters.unverified} onChange={set("unverified")} className="h-4 w-4 accent-emerald-700" />
-            Also show unverified offers (clearly labelled)
-          </label>
-          {clearAll && <div className="flex justify-end sm:col-span-2 lg:col-span-4">{clearAll}</div>}
-        </div>
+        <>
+          {/* Phones: a sheet that slides up over the page; larger screens: a panel under the filter row. */}
+          <div aria-hidden="true" onClick={() => setOpen(false)} className="backdrop-in fixed inset-0 z-40 bg-black/50 sm:hidden" />
+          <div
+            id="more-filters"
+            role="dialog"
+            aria-label="More filters"
+            className="sheet-in fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 shadow-2xl sm:static sm:z-auto sm:max-h-none sm:overflow-visible sm:rounded-xl sm:border sm:border-slate-200 sm:p-4 sm:shadow-none"
+          >
+            <div className="mb-4 sm:hidden">
+              <span aria-hidden="true" className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-slate-300" />
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-900">More filters</h2>
+                <button type="button" onClick={() => setOpen(false)} aria-label="Close more filters" className="grid h-9 w-9 place-items-center rounded-full text-xl leading-none text-slate-500 hover:bg-slate-100">
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
+              <label className="text-sm">
+                <span className="mb-1.5 block font-medium text-slate-700">Where to redeem</span>
+                <ClearableSelect className="w-full" label="where to redeem" value={filters.availability} defaultValue={DEFAULT_FILTERS.availability} onChange={setMore("availability")} onClear={clearMore("availability")}>
+                  <option value="any">Online or in-store</option>
+                  <option value="in_store">In-store</option>
+                  <option value="online">Available online</option>
+                  <option value="online_only">Online only</option>
+                </ClearableSelect>
+              </label>
+              <label className="text-sm">
+                <span className="mb-1.5 block font-medium text-slate-700">Source</span>
+                <ClearableSelect className="w-full" label="source" value={filters.sourceType} onChange={setMore("sourceType")} onClear={clearMore("sourceType")}>
+                  <option value="">Any source</option>
+                  {SOURCE_TYPES.map((s) => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </ClearableSelect>
+              </label>
+              <label className="text-sm">
+                <span className="mb-1.5 block font-medium text-slate-700">Minimum discount</span>
+                <ClearableSelect className="w-full" label="minimum discount" value={filters.minDiscount} onChange={setMore("minDiscount")} onClear={clearMore("minDiscount")}>
+                  <option value="">Any</option>
+                  {[10, 20, 30, 40, 50, 70].map((n) => (
+                    <option key={n} value={n}>{n}% or more</option>
+                  ))}
+                </ClearableSelect>
+              </label>
+              <label className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm sm:col-span-2 sm:border-0 sm:p-0">
+                <input type="checkbox" checked={filters.national} onChange={setMore("national")} className="h-5 w-5 shrink-0 accent-emerald-700 sm:h-4 sm:w-4" />
+                Include nationwide and online-only deals
+              </label>
+              <label className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm sm:col-span-2 sm:border-0 sm:p-0">
+                <input type="checkbox" checked={filters.unverified} onChange={setMore("unverified")} className="h-5 w-5 shrink-0 accent-emerald-700 sm:h-4 sm:w-4" />
+                Also show unverified offers (clearly labelled)
+              </label>
+              {clearAll && <div className="hidden justify-end sm:col-span-2 sm:flex lg:col-span-4">{clearAll}</div>}
+            </div>
+            <div className="mt-5 flex items-center gap-3 sm:hidden">
+              {clearAll && <div className="flex-1">{clearAll}</div>}
+              <button type="button" onClick={() => setOpen(false)} className="ml-auto rounded-full bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-700/20 active:scale-95">
+                Done
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
