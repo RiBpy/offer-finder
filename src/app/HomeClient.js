@@ -110,6 +110,8 @@ export default function HomeClient() {
   const [reloadToken, setReloadToken] = useState(0);
   const discoveryStarted = useRef(false);
   const scrollRestored = useRef(false);
+  const resultsRef = useRef(null);
+  const lastParamsKey = useRef(null);
 
   useEffect(() => {
     const initial = filtersFromSearch(window.location.search);
@@ -202,6 +204,20 @@ export default function HomeClient() {
     load(1, ctrl.signal);
     return () => ctrl.abort();
   }, [paramsKey, load]);
+
+  // A new choice made further down the page brings the start of its results
+  // into view, instead of leaving you halfway down a different list.
+  useEffect(() => {
+    if (!paramsKey) return;
+    const previous = lastParamsKey.current;
+    lastParamsKey.current = paramsKey;
+    const el = resultsRef.current;
+    if (!previous || previous === paramsKey || !el) return;
+    if (el.getBoundingClientRect().top < 0) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }
+  }, [paramsKey]);
 
   // Coming back from an offer: once the list has loaded, return to where it was.
   useEffect(() => {
@@ -370,7 +386,7 @@ export default function HomeClient() {
               </div>
             )}
 
-            <section aria-label={feedTitle} aria-busy={feed.status === "loading"} className="min-h-[75vh] space-y-4">
+            <section ref={resultsRef} aria-label={feedTitle} aria-busy={feed.status === "loading"} className="min-h-[75vh] scroll-mt-36 space-y-4 sm:scroll-mt-24">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -398,7 +414,7 @@ export default function HomeClient() {
                 </div>
               )}
 
-              {(feed.status === "loading" || feed.status === "idle") && (
+              {(feed.status === "loading" || feed.status === "idle") && feed.items.length === 0 && (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   {[0, 1, 2, 3, 4, 5].map((i) => (
                     <OfferCardSkeleton key={i} index={i} />
@@ -406,8 +422,9 @@ export default function HomeClient() {
                 </div>
               )}
 
-              {feed.status !== "loading" && feed.status !== "idle" && feed.items.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {/* While a new choice loads, the current results stay (faded) so the page keeps its height and does not jump. */}
+              {feed.items.length > 0 && (
+                <div className={`grid grid-cols-2 gap-3 transition-opacity duration-200 md:grid-cols-3 ${feed.status === "loading" ? "pointer-events-none opacity-50" : ""}`}>
                   {feed.items.map((o, i) => (
                     <OfferCard key={o.id} offer={o} index={i % PAGE_SIZE} />
                   ))}
