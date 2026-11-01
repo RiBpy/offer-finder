@@ -161,6 +161,73 @@ html.dark .skeleton {
   animation-delay: calc(var(--i, 0) * 70ms);
 }
 
+/* First-visit loader: the logo breathes (like gentlepark.com's) above a thin
+   bar sweeping in the brand gradient, then the whole screen fades away. */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  background:
+    radial-gradient(circle at 50% 46%, rgb(16 185 129 / 0.1), transparent 34%),
+    var(--page);
+  transition:
+    opacity 0.45s ease,
+    visibility 0.45s;
+}
+html.dark .page-loader {
+  background:
+    radial-gradient(circle at 50% 46%, rgb(16 185 129 / 0.14), transparent 34%),
+    var(--page);
+}
+.page-loader.is-done {
+  opacity: 0;
+  visibility: hidden;
+}
+@keyframes loader-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.97);
+  }
+}
+.page-loader-logo {
+  animation: loader-breathe 1.8s ease-in-out infinite;
+}
+.page-loader-bar {
+  position: relative;
+  width: 9rem;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgb(16 185 129 / 0.15);
+}
+.page-loader-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #10b981, #0d9488);
+  animation: loader-bar 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes loader-bar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
 /* Small pulsing dot for "checking for new offers". */
 @keyframes live-dot {
   0%,
@@ -317,6 +384,8 @@ html.dark .skeleton {
     transition: none;
   }
   .back-to-top-arrow,
+  .page-loader-logo,
+  .page-loader-bar::after,
   .skeleton,
   .skeleton-card,
   .live-dot,

@@ -18,10 +18,12 @@ import {
 import { Logo, BottomNav } from "@/components/SiteChrome";
 import ThemeToggle from "@/components/ThemeToggle";
 import HeaderShell from "@/components/HeaderShell";
+import PageLoader from "@/components/PageLoader";
 import { useDragScroll, useStoredState, useToday } from "@/components/hooks";
 import { rememberList, rememberedList, takeScrollRestore } from "@/lib/return-to";
 
 const PAGE_SIZE = 12;
+const BOOT_TIMEOUT_MS = 12000;
 
 function buildParams({ location, filters, tz, date }) {
   const p = new URLSearchParams({ tz, date });
@@ -59,7 +61,7 @@ async function fetchOffers(params, signal) {
   return data;
 }
 
-function Section({ title, subtitle, params, extra }) {
+function Section({ title, subtitle, params, extra, onSettled }) {
   const [state, setState] = useState({ loading: true, items: [] });
   const rowRef = useDragScroll();
   const key = params ? `${params}&${extra}` : null;
@@ -72,6 +74,9 @@ function Section({ title, subtitle, params, extra }) {
       .catch((e) => e.name !== "AbortError" && setState({ loading: false, items: [] }));
     return () => ctrl.abort();
   }, [key]);
+  useEffect(() => {
+    if (!state.loading) onSettled?.(title);
+  }, [state.loading, onSettled, title]);
   if (!state.loading && state.items.length === 0) return null;
   return (
     <section aria-label={title} className="space-y-3">
@@ -262,6 +267,24 @@ export default function HomeClient() {
   };
 
   const showSections = isDefaultFilters(filters);
+
+  // The first-visit loader stays until the list and the rows on screen have
+  // their offers. It gives way early to the location picker, and never stays
+  // longer than BOOT_TIMEOUT_MS.
+  const [settledSections, setSettledSections] = useState(() => new Set());
+  const onSectionSettled = useCallback((title) => setSettledSections((s) => (s.has(title) ? s : new Set(s).add(title))), []);
+  const [booted, setBooted] = useState(false);
+  const sectionTitles = showSections ? ["Brand Offers", ...(location?.lat != null ? ["Near You"] : []), "Ending Soon", "Recently Added"] : [];
+  const listSettled = feed.status === "done" || feed.status === "error";
+  const pageSettled = listSettled && sectionTitles.every((t) => settledSections.has(t));
+  useEffect(() => {
+    if (pageSettled || pickerOpen) setBooted(true);
+  }, [pageSettled, pickerOpen]);
+  useEffect(() => {
+    const t = setTimeout(() => setBooted(true), BOOT_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, []);
+
   const sectionBase = useMemo(() => {
     if (!baseParams) return null;
     const p = new URLSearchParams(baseParams);
@@ -377,12 +400,12 @@ export default function HomeClient() {
 
             {showSections && sectionBase && (
               <div className="space-y-8">
-                <Section key={`brand-${reloadToken}`} title="Brand Offers" subtitle="Sales and campaigns run by brands and shops" params={sectionBase} extra="section=brand" />
+                <Section key={`brand-${reloadToken}`} title="Brand Offers" subtitle="Sales and campaigns run by brands and shops" params={sectionBase} extra="section=brand" onSettled={onSectionSettled} />
                 {location?.lat != null && (
-                  <Section key={`near-${reloadToken}`} title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" />
+                  <Section key={`near-${reloadToken}`} title="Near You" subtitle="Closest verified branches first" params={sectionBase} extra="section=near" onSettled={onSectionSettled} />
                 )}
-                <Section key={`ending-${reloadToken}`} title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" />
-                <Section key={`recent-${reloadToken}`} title="Recently Added" params={sectionBase} extra="section=recent" />
+                <Section key={`ending-${reloadToken}`} title="Ending Soon" subtitle="Valid offers ending in the next 7 days" params={sectionBase} extra="section=ending" onSettled={onSectionSettled} />
+                <Section key={`recent-${reloadToken}`} title="Recently Added" params={sectionBase} extra="section=recent" onSettled={onSectionSettled} />
               </div>
             )}
 
@@ -414,21 +437,22 @@ export default function HomeClient() {
                 </div>
               )}
 
-              {(feed.status === "loading" || feed.status === "idle") && feed.items.length === 0 && (
+              {/* A new choice shows placeholder cards, about as many as the list it
+                  replaces, so the page keeps roughly its height while it loads. */}
+              {feed.status === "loading" || feed.status === "idle" ? (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                  {Array.from({ length: Math.min(Math.max(feed.items.length, 6), PAGE_SIZE) }, (_, i) => (
                     <OfferCardSkeleton key={i} index={i} />
                   ))}
                 </div>
-              )}
-
-              {/* While a new choice loads, the current results stay (faded) so the page keeps its height and does not jump. */}
-              {feed.items.length > 0 && (
-                <div className={`grid grid-cols-2 gap-3 transition-opacity duration-200 md:grid-cols-3 ${feed.status === "loading" ? "pointer-events-none opacity-50" : ""}`}>
-                  {feed.items.map((o, i) => (
-                    <OfferCard key={o.id} offer={o} index={i % PAGE_SIZE} />
-                  ))}
-                </div>
+              ) : (
+                feed.items.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {feed.items.map((o, i) => (
+                      <OfferCard key={o.id} offer={o} index={i % PAGE_SIZE} />
+                    ))}
+                  </div>
+                )
               )}
 
               {feed.status === "done" && feed.items.length === 0 && (
@@ -480,6 +504,7 @@ export default function HomeClient() {
 
       <LocationPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={selectLocation} current={location} message={pickerMessage} />
       <BottomNav active="home" />
+      <PageLoader done={booted} />
     </>
   );
 }
