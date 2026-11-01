@@ -46,6 +46,9 @@ export const SEARCHES = [
   // kfcbd.com disallows all crawlers in robots.txt, so KFC deals come from news.
   "KFC Bangladesh offer",
   "KFC Dhaka deal",
+  // aarong.com builds its pages with JavaScript, so Aarong sales come from news.
+  "Aarong discount",
+  "Aarong sale offer",
 ];
 
 // Bangla searches mostly return Indian (West Bengal) outlets writing about
