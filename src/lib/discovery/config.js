@@ -192,6 +192,32 @@ export const SITES = [
     category: "bags",
     recheckDays: 3,
   },
+  // Clothing brands. Aarong (aarong.com) builds its pages with JavaScript, so it
+  // cannot be read.
+  {
+    // Infinity Mega Mall's sale list (Richman and the other house brands).
+    name: "Infinity",
+    pages: ["https://infinitymegamall.com/category/sale-2"],
+    note: `${SHOP_SALE_NOTE} Title it with Infinity Mega Mall. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Gentle Park's home page carries its store-wide sale banner (e.g. 20% off online).
+    name: "Gentle Park",
+    pages: ["https://gentlepark.com/"],
+    note: "This is the home page of Gentle Park, a clothing brand for men, women (Sofira) and kids (Pappa). Return at most ONE offer, only for a sale or discount on the whole store or a whole collection (e.g. 'Flat 20% off all products online at Gentle Park'), with its biggest discount and any dates or conditions (e.g. online only). Do not return offers for single products. If nothing on the page says there is a sale, return no offer.",
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Plus Point (menswear) lists its discounted items here.
+    name: "Plus Point",
+    pages: ["https://pluspoint.com.bd/collections/discount-corner"],
+    note: `${SHOP_SALE_NOTE} Plus Point sells menswear, so set audience to men. If no item on the page is discounted, or every discounted item is sold out, return no offer.`,
+    category: "fashion",
+    recheckDays: 3,
+  },
   // Supermarkets. Meena Bazar (meenabazaronline.com) and Prince Bazar
   // (princebazarbd.com) build their pages with JavaScript, so they cannot be read.
   {
