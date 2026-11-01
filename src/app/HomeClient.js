@@ -277,6 +277,9 @@ export default function HomeClient() {
   const sectionTitles = showSections ? ["Brand Offers", ...(location?.lat != null ? ["Near You"] : []), "Ending Soon", "Recently Added"] : [];
   const listSettled = feed.status === "done" || feed.status === "error";
   const pageSettled = listSettled && sectionTitles.every((t) => settledSections.has(t));
+  // Share of the loading steps already done, for the loader's percentage.
+  const bootSteps = [filtersReady, Boolean(tz && date), geoAttempted, listSettled, ...sectionTitles.map((t) => settledSections.has(t))];
+  const bootProgress = bootSteps.filter(Boolean).length / bootSteps.length;
   useEffect(() => {
     if (pageSettled || pickerOpen) setBooted(true);
   }, [pageSettled, pickerOpen]);
@@ -504,7 +507,7 @@ export default function HomeClient() {
 
       <LocationPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={selectLocation} current={location} message={pickerMessage} />
       <BottomNav active="home" />
-      <PageLoader done={booted} />
+      <PageLoader progress={bootProgress} done={booted} />
     </>
   );
 }
