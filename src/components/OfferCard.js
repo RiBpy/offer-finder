@@ -73,13 +73,6 @@ const CHECK = "m5 12.5 4.5 4.5L19 7.5";
 
 const chip = "inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-medium text-slate-700";
 
-// A soft light follows the pointer across the card.
-function trackPointer(e) {
-  const r = e.currentTarget.getBoundingClientRect();
-  e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-  e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-}
-
 /** `index` staggers the card's entrance animation within the batch it arrived in. */
 export default function OfferCard({ offer, compact = false, index = 0 }) {
   const v = validityLabel(offer);
@@ -101,18 +94,17 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
   return (
     <article
       style={{ "--i": index }}
-      onPointerMove={trackPointer}
-      className={`offer-card card-in group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 snap-start sm:w-60" : ""}`}
+      className={`offer-card card-in relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 snap-start sm:w-60" : ""}`}
     >
       {/* Images sit on white in both themes: many are transparent logos with dark lettering. */}
-      <div className="offer-media relative aspect-[16/9] overflow-hidden bg-[#fff]">
+      <div className="relative aspect-[16/9] overflow-hidden bg-[#fff]">
         {offer.imageUrl ? <OfferImage src={offer.imageUrl} /> : (
           <div className="offer-zoom grid h-full place-items-center bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 text-4xl font-bold text-emerald-800/70">
             {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}
           </div>
         )}
         {discount && (
-          <span className="offer-tag absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
+          <span className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
             {discount}
           </span>
         )}
@@ -126,7 +118,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
 
       <div className="relative flex flex-1 flex-col gap-2 p-3">
         {seller && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{seller}</p>}
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors duration-300 group-hover:text-emerald-700 sm:text-[15px]">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">
           <Link href={`/offers/${offer.slug}`} draggable={false} className="after:absolute after:inset-0 after:z-[1] focus-visible:outline-none">
             {offer.title}
           </Link>
@@ -174,7 +166,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
               target="_blank"
               rel="noopener noreferrer nofollow"
               draggable={false}
-              className="relative z-10 shrink-0 rounded-md border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition-colors duration-300 hover:bg-emerald-600 hover:text-white group-hover:border-emerald-600/60"
+              className="relative z-10 shrink-0 rounded-md border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white"
             >
               Source ↗
             </a>
