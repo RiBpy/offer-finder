@@ -7,7 +7,7 @@ import { normalizeOfferInput, ValidationError } from "../src/lib/offers/model.js
 import { parseOfferQuery } from "../src/lib/offers/query.js";
 import { effectiveStatus } from "../src/lib/offers/status.js";
 import { extractFromHtml, detectEndedLanguage } from "../src/lib/extract/html.js";
-import { parseRobots, isAllowedByRobots, isPrivateIp } from "../src/lib/sources/fetcher.js";
+import { parseRobots, isAllowedByRobots, isPrivateIp, responseProblem, isBlocked } from "../src/lib/sources/fetcher.js";
 import { decideVerification } from "../src/lib/verify/verifier.js";
 import { hashPassword, verifyPassword, createSessionToken, verifySessionToken } from "../src/lib/auth/session.js";
 import { haversineKm } from "../src/lib/geo.js";
@@ -153,6 +153,18 @@ test("private addresses are blocked", () => {
   for (const ip of ["127.0.0.1", "10.1.2.3", "192.168.1.1", "172.20.0.1", "169.254.169.254", "::1", "fd00::1", "::ffff:127.0.0.1"])
     assert.ok(isPrivateIp(ip), ip);
   assert.ok(!isPrivateIp("93.184.216.34"));
+});
+
+test("blocked responses and bot-check pages are reported", () => {
+  const page = (status, body = "<html><title>Offers</title></html>") => ({ status, body });
+  assert.equal(responseProblem(page(200)), null);
+  assert.equal(responseProblem(page(405)), "Blocked by the site (HTTP 405)");
+  assert.equal(responseProblem(page(500)), "HTTP 500");
+  assert.ok(isBlocked(responseProblem(page(200, "<title>Just a moment...</title><script>window._cf_chl_opt={}</script>"))));
+  assert.ok(isBlocked(responseProblem(page(200, "<p>Your request is being verified</p>"))));
+  // Cloudflare's detection script sits on ordinary pages too.
+  assert.equal(responseProblem(page(200, '<title>Offers</title><script src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script>')), null);
+  assert.ok(!isBlocked(responseProblem(page(404))));
 });
 
 test("verification never treats a reachable page as proof of validity", () => {

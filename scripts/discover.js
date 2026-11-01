@@ -21,6 +21,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const db = await getDb();
 try {
   const total = { processed: 0, unchanged: 0, failed: 0, published: 0, held: 0, duplicates: 0, inputTokens: 0, outputTokens: 0 };
+  const blocked = new Set();
   let processed;
   for (let attempt = 0; ; attempt++) {
     const run = await runDiscovery(db, {
@@ -36,6 +37,7 @@ try {
     }
     processed = run.processed;
     for (const k of Object.keys(total)) total[k] += processed[k] || 0;
+    for (const h of processed.blocked || []) blocked.add(h);
 
     const temporary = processed.aiError && TEMPORARY_AI_STATUS.has(processed.aiStatus);
     if (!temporary || total.processed >= maxItems || attempt >= PAUSES_MS.length) break;
@@ -47,6 +49,7 @@ try {
     `Pages read: ${total.processed} (failed ${total.failed}), unchanged and skipped: ${total.unchanged}. Offers published: ${total.published}, held back: ${total.held}, duplicates: ${total.duplicates}.`,
   );
   console.log(`AI (${aiProvider()} / ${aiModel()}) tokens: ${total.inputTokens} in / ${total.outputTokens} out. Pages still queued: ${processed.queued}`);
+  if (blocked.size) console.log(`Blocked by the site (not read, tried again later): ${[...blocked].join(", ")}`);
   if (processed.aiError) {
     if (TEMPORARY_AI_STATUS.has(processed.aiStatus)) {
       // Not a setup problem: the remaining pages stay queued for the next run.

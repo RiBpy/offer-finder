@@ -4,7 +4,7 @@
 // plain page. One partner becomes one queued item, read by the AI like any page.
 
 import { visibleText } from "../extract/html.js";
-import { politeFetch } from "../sources/fetcher.js";
+import { politeFetch, responseProblem } from "../sources/fetcher.js";
 
 const BASE = "https://www.ebl.com.bd";
 const DETAILS_URL = `${BASE}/partner/partners_details`;
@@ -39,7 +39,8 @@ export async function eblCandidates(site) {
   for (const slug of EBL_CATEGORIES) {
     const url = categoryUrl(slug);
     const res = await politeFetch(url, { retries: 1 });
-    if (res.status >= 400) throw new Error(`HTTP ${res.status} for ${url}`);
+    const problem = responseProblem(res);
+    if (problem) throw new Error(`${problem} for ${url}`);
     for (const p of parseEblPartners(res.body)) {
       out.push({
         url: `${url}?partner=${p.id}`,
@@ -67,7 +68,8 @@ async function session(pageUrl) {
   const cached = sessions.get(pageUrl);
   if (cached && cached.expires > Date.now()) return cached;
   const res = await politeFetch(pageUrl, { retries: 1 });
-  if (res.status >= 400) throw new Error(`HTTP ${res.status} for ${pageUrl}`);
+  const problem = responseProblem(res);
+  if (problem) throw new Error(`${problem} for ${pageUrl}`);
   const token = res.body.match(/csrf_eblbdtoken_name['"]\s*:\s*['"]([0-9a-f]+)/i)?.[1];
   if (!token) throw new Error("EBL page has no CSRF token");
   const cookie = res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
