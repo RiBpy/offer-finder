@@ -201,4 +201,22 @@ export async function politeFetch(url, { retries = 2, baseDelayMs = 1000, timeou
   }
 }
 
+// Markers of the page a site's bot protection serves instead of the real one.
+// (Cloudflare's "challenge-platform" script is left out: it is on normal pages too.)
+const BOT_CHECK = /<title>\s*(just a moment|attention required|access denied)|request is being verified|checking your browser before|cf_chl_opt|cf-chl-|awswaf|captcha-delivery\.com/i;
+
+/**
+ * Why a response is not the page itself, or null: the site blocked us (HTTP
+ * 403/405 or a bot-check page) or another HTTP error. Blocks are reported, never
+ * worked around.
+ */
+export function responseProblem(res) {
+  if (res.status === 403 || res.status === 405) return `Blocked by the site (HTTP ${res.status})`;
+  if (res.status >= 400) return `HTTP ${res.status}`;
+  if (typeof res.body === "string" && res.body.length < 100_000 && BOT_CHECK.test(res.body)) return "Blocked by the site's bot check";
+  return null;
+}
+
+export const isBlocked = (problem) => problem?.startsWith("Blocked") ?? false;
+
 export { isPrivateIp };

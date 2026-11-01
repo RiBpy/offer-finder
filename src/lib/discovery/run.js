@@ -5,7 +5,7 @@
 
 import crypto from "node:crypto";
 import { extractFromHtml, visibleText } from "../extract/html.js";
-import { politeFetch } from "../sources/fetcher.js";
+import { isBlocked, politeFetch, responseProblem } from "../sources/fetcher.js";
 import { recordSourceResult } from "../sources/health.js";
 import { canonicalizeUrl } from "../dedupe.js";
 import { todayYmd, DAY_MS } from "../dates.js";
@@ -49,10 +49,11 @@ async function queueCandidates(db, candidates, priority, now) {
       { upsert: true },
     );
     added += r.upsertedCount;
-    // Pages that list many offers change over time, so they are read again.
+    // Pages that list many offers change over time, so they are read again;
+    // so are ones that failed (e.g. the site blocked us for a while).
     if (recheckDays && !r.upsertedCount) {
       const re = await db.collection("discovery_items").updateOne(
-        { _id: c.url, status: { $in: ["done", "no_offer"] }, processedAt: { $lt: new Date(now.getTime() - recheckDays * DAY_MS) } },
+        { _id: c.url, status: { $in: ["done", "no_offer", "failed"] }, processedAt: { $lt: new Date(now.getTime() - recheckDays * DAY_MS) } },
         { $set: { status: "queued", attempts: 0 } },
       );
       added += re.modifiedCount;
@@ -142,7 +143,9 @@ async function readItem(db, item, now) {
   }
 
   const res = await politeFetch(item.url, { retries: 1 });
-  await recordSourceResult(db, item.url, { ok: res.status < 400, status: res.status, error: res.status >= 400 ? `HTTP ${res.status}` : null, adapter: "discovery", now });
+  const problem = responseProblem(res);
+  await recordSourceResult(db, item.url, { ok: !problem, status: res.status, error: problem, adapter: "discovery", now });
+  if (isBlocked(problem)) return { result: { status: "failed", error: problem, blocked: true } };
   if (res.status >= 400) return { result: httpFailure(res.status) };
   if (!/html/i.test(res.headers.get("content-type") || "")) return { result: { status: "no_offer", error: "not an HTML page" } };
 
@@ -220,7 +223,7 @@ async function processItem(db, item, now) {
 
 /** Processes queued pages until the deadline or `maxItems`. */
 export async function processQueue(db, { deadline, maxItems = 50 } = {}) {
-  const summary = { processed: 0, unchanged: 0, published: 0, held: 0, duplicates: 0, failed: 0, inputTokens: 0, outputTokens: 0 };
+  const summary = { processed: 0, unchanged: 0, published: 0, held: 0, duplicates: 0, failed: 0, blocked: [], inputTokens: 0, outputTokens: 0 };
   while (summary.processed < maxItems && Date.now() < deadline) {
     const now = new Date();
     const item = await claimNext(db, now);
@@ -244,7 +247,12 @@ export async function processQueue(db, { deadline, maxItems = 50 } = {}) {
       result = { status: retry ? "queued" : "failed", error: err.message };
       log.warn("discovery item failed", { url: item.url, attempt: item.attempts, error: err.message });
     }
-    const { unchanged, ...fields } = result;
+    const { unchanged, blocked, ...fields } = result;
+    if (blocked) {
+      const host = new URL(item.url).hostname;
+      if (!summary.blocked.includes(host)) summary.blocked.push(host);
+      log.warn("discovery blocked by site", { url: item.url, error: result.error });
+    }
     await db.collection("discovery_items").updateOne(
       { _id: item._id },
       { $set: { ...fields, processedAt: new Date(), model: fields.model ?? aiModel() }, $unset: { startedAt: "" } },

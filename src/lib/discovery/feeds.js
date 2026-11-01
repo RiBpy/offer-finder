@@ -3,7 +3,7 @@
 // politeFetch so robots.txt, SSRF checks and retries apply.
 
 import { decodeEntities } from "../extract/html.js";
-import { politeFetch } from "../sources/fetcher.js";
+import { politeFetch, responseProblem } from "../sources/fetcher.js";
 import { canonicalizeUrl } from "../dedupe.js";
 import { cleanText } from "../text.js";
 import { SKIPPED_NEWS_HOSTS } from "./config.js";
@@ -91,7 +91,8 @@ function candidate(url, fields) {
 
 export async function fetchFeedCandidates(feed) {
   const res = await politeFetch(feed.url, { accept: XML_ACCEPT, retries: 1 });
-  if (res.status >= 400) throw new Error(`HTTP ${res.status}`);
+  const problem = responseProblem(res);
+  if (problem) throw new Error(problem);
   return parseFeed(res.body)
     .filter((it) => looksLikeOffer(it.title, it.summary))
     .map((it) =>
@@ -103,7 +104,8 @@ export async function fetchFeedCandidates(feed) {
 export async function fetchSearchCandidates(query) {
   const url = bingNewsUrl(query);
   const res = await politeFetch(url, { accept: XML_ACCEPT, retries: 1 });
-  if (res.status >= 400) throw new Error(`HTTP ${res.status}`);
+  const problem = responseProblem(res);
+  if (problem) throw new Error(problem);
   return parseFeed(res.body)
     .filter((it) => looksLikeOffer(it.title, it.summary))
     .map((it) =>
@@ -152,7 +154,8 @@ function siteCandidate(url, site, origin) {
 // Offer pages from a listing page's links.
 async function listingCandidates(site) {
   const res = await politeFetch(site.url, { retries: 1 });
-  if (res.status >= 400) throw new Error(`HTTP ${res.status}`);
+  const problem = responseProblem(res);
+  if (problem) throw new Error(problem);
   return listingLinks(res.body, res.url, site.linkPattern).map((url) => siteCandidate(url, site, site.url));
 }
 
@@ -162,7 +165,8 @@ async function sitemapCandidates(site) {
   const found = new Set();
   for (let fetched = 0; queue.length && fetched < 6; fetched++) {
     const res = await politeFetch(queue.shift(), { accept: XML_ACCEPT, retries: 1 });
-    if (res.status >= 400) throw new Error(`HTTP ${res.status}`);
+    const problem = responseProblem(res);
+    if (problem) throw new Error(problem);
     const { isIndex, urls } = parseSitemap(res.body);
     if (isIndex) {
       queue.push(...urls.filter((u) => !site.sitemapIndexPattern || site.sitemapIndexPattern.test(u)));
