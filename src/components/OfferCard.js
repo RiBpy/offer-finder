@@ -43,16 +43,16 @@ export function StatusPill({ status }) {
 // Wider than this is a logo or banner, not a photo.
 const LOGO_ASPECT = 2.6;
 
-// The cover picture. Source images come in every shape, so the picture is shown
-// whole, over a blurred, enlarged copy of itself that fills the rest of the
-// cover; wide logos sit on plain white instead.
-function CoverImage({ src }) {
+// Source images come in every shape, so the picture is shown whole over a
+// blurred, enlarged copy of itself that fills the rest of the frame; wide logos
+// sit on plain white instead.
+function OfferImage({ src }) {
   const [logo, setLogo] = useState(false);
   // Source images are external; plain lazy imgs avoid proxying them through our server.
   const img = { src, alt: "", loading: "lazy", decoding: "async", referrerPolicy: "no-referrer", draggable: false };
   return (
-    <div className="absolute inset-0 bg-[#fff]">
-      {!logo && <img {...img} aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-xl" />}
+    <div className="offer-zoom absolute inset-0">
+      {!logo && <img {...img} aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-xl" />}
       <img
         {...img}
         onLoad={(e) => setLogo(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight > LOGO_ASPECT)}
@@ -72,26 +72,15 @@ const PIN = "M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21Zm0-9a2.5 2.
 const CHECK = "m5 12.5 4.5 4.5L19 7.5";
 
 const chip = "inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-medium text-slate-700";
-const sourceButton = "pointer-events-auto relative shrink-0 rounded-full border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition hover:bg-emerald-50";
 
-// Binder rings along the top of the pad; the cover turns over on them.
-function Rings({ count }) {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-x-5 top-0 z-40 flex justify-between">
-      {Array.from({ length: count }, (_, i) => (
-        <span key={i} className="offer-ring" />
-      ))}
-    </div>
-  );
+// A soft light follows the pointer across the card.
+function trackPointer(e) {
+  const r = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+  e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
 }
 
-/**
- * An offer as a ring-bound pad. The cover is the offer's picture; on hover (or
- * keyboard focus) it turns up and over the rings like a page, showing the
- * offer's details on the page beneath. Touch screens, which cannot hover, show
- * the picture above the details. `index` staggers the card's entrance
- * animation within the batch it arrived in.
- */
+/** `index` staggers the card's entrance animation within the batch it arrived in. */
 export default function OfferCard({ offer, compact = false, index = 0 }) {
   const v = validityLabel(offer);
   const discount = discountLabel(offer);
@@ -110,79 +99,85 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
             : offer.eligibleLocations?.[0]?.name || offer.address || offer.city;
 
   return (
-    <article style={{ "--i": index }} className={`offer-card card-in relative flex min-w-0 flex-col pt-2.5 ${compact ? "w-56 shrink-0 snap-start sm:w-60" : ""}`}>
-      <Rings count={compact ? 5 : 6} />
-      {/* The whole card opens the offer. The pad sits above this link but lets clicks through, except on its Source link. */}
-      <Link href={`/offers/${offer.slug}`} draggable={false} aria-label={offer.title} className="absolute inset-0 z-20 rounded-2xl focus-visible:outline-offset-4" />
-      <BookmarkButton id={offer.id} title={offer.title} className="absolute right-2 top-5 z-40" />
-
-      <div className="offer-pad pointer-events-none relative z-30 flex flex-1 flex-col overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5">
-        {/* The cover: just the picture. Its back is plain paper, seen as it turns over. */}
-        <div className="offer-cover">
-          <div className="offer-face">
-            {offer.imageUrl ? <CoverImage src={offer.imageUrl} /> : (
-              <div className="grid h-full place-items-center bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 text-5xl font-bold text-emerald-800/70">
-                {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}
-              </div>
-            )}
+    <article
+      style={{ "--i": index }}
+      onPointerMove={trackPointer}
+      className={`offer-card card-in group relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 snap-start sm:w-60" : ""}`}
+    >
+      {/* Images sit on white in both themes: many are transparent logos with dark lettering. */}
+      <div className="offer-media relative aspect-[16/9] overflow-hidden bg-[#fff]">
+        {offer.imageUrl ? <OfferImage src={offer.imageUrl} /> : (
+          <div className="offer-zoom grid h-full place-items-center bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 text-4xl font-bold text-emerald-800/70">
+            {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}
           </div>
-          <div className="offer-back" />
+        )}
+        {discount && (
+          <span className="offer-tag absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
+            {discount}
+          </span>
+        )}
+        {offer.validationStatus !== "active" && (
+          <span className="absolute bottom-2 right-2">
+            <StatusPill status={offer.validationStatus} />
+          </span>
+        )}
+        <BookmarkButton id={offer.id} title={offer.title} className="absolute right-2 top-2 z-10" />
+      </div>
+
+      <div className="relative flex flex-1 flex-col gap-2 p-3">
+        {seller && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{seller}</p>}
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors duration-300 group-hover:text-emerald-700 sm:text-[15px]">
+          <Link href={`/offers/${offer.slug}`} draggable={false} className="after:absolute after:inset-0 after:z-[1] focus-visible:outline-none">
+            {offer.title}
+          </Link>
+        </h3>
+
+        {offer.originalPrice != null && offer.discountedPrice != null && (
+          <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
+            <span className="font-bold text-emerald-700">{formatMoney(offer.discountedPrice, offer.currency)}</span>
+            <span className="text-xs text-slate-400 line-through">{formatMoney(offer.originalPrice, offer.currency)}</span>
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center gap-1 text-[11px]">
+          <span className={chip}>
+            {category?.icon && <span aria-hidden="true">{category.icon}</span>}
+            {categoryLabel(offer.primaryCategory)}
+          </span>
+          {!compact && <span className={chip}>{AVAILABILITY_LABELS[offer.availabilityType]}</span>}
+          {!compact && offer.isBrandOffer && <span className="rounded-md bg-violet-50 px-1.5 py-0.5 font-medium text-violet-800">Brand offer</span>}
         </div>
 
-        {/* The page beneath: the offer's details. */}
-        <div className="offer-under flex flex-1 flex-col gap-2 p-3 pt-5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {discount && (
-              <span className="max-w-full truncate rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-md shadow-emerald-900/20">
-                {discount}
+        <div className="mt-auto space-y-2 border-t border-slate-100 pt-2 text-[11px]">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600">
+            <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold ${TONES[v.tone]}`}>
+              <Icon d={CLOCK} className="h-3 w-3" />
+              {v.text}
+            </span>
+            {(distance || where) && (
+              <span className="inline-flex min-w-0 items-center gap-1">
+                <Icon d={PIN} className="h-3 w-3 text-slate-400" />
+                <span className="truncate">{[distance, where].filter(Boolean).join(" · ")}</span>
               </span>
             )}
-            <StatusPill status={offer.validationStatus} />
           </div>
-          {seller && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{seller}</p>}
-          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">{offer.title}</h3>
-
-          {offer.originalPrice != null && offer.discountedPrice != null && (
-            <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
-              <span className="font-bold text-emerald-700">{formatMoney(offer.discountedPrice, offer.currency)}</span>
-              <span className="text-xs text-slate-400 line-through">{formatMoney(offer.originalPrice, offer.currency)}</span>
-            </p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-1 text-[11px]">
-            <span className={chip}>
-              {category?.icon && <span aria-hidden="true">{category.icon}</span>}
-              {categoryLabel(offer.primaryCategory)}
+          <div className="flex min-w-0 items-center justify-between gap-2 text-slate-500">
+            <span className="inline-flex min-w-0 items-center gap-1">
+              <Icon d={CHECK} className="h-3 w-3 text-emerald-600" />
+              <span className="truncate">
+                {sourceTypeLabel(offer.sourceType)}
+                {offer.lastVerifiedAt && <> · {timeAgo(offer.lastVerifiedAt)}</>}
+              </span>
             </span>
-            {!compact && <span className={chip}>{AVAILABILITY_LABELS[offer.availabilityType]}</span>}
-            {!compact && offer.isBrandOffer && <span className="rounded-md bg-violet-50 px-1.5 py-0.5 font-medium text-violet-800">Brand offer</span>}
-          </div>
-
-          <div className="mt-auto space-y-2 border-t border-slate-100 pt-2 text-[11px]">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600">
-              <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold ${TONES[v.tone]}`}>
-                <Icon d={CLOCK} className="h-3 w-3" />
-                {v.text}
-              </span>
-              {(distance || where) && (
-                <span className="inline-flex min-w-0 items-center gap-1">
-                  <Icon d={PIN} className="h-3 w-3 text-slate-400" />
-                  <span className="truncate">{[distance, where].filter(Boolean).join(" · ")}</span>
-                </span>
-              )}
-            </div>
-            <div className="flex min-w-0 items-center justify-between gap-2 text-slate-500">
-              <span className="inline-flex min-w-0 items-center gap-1">
-                <Icon d={CHECK} className="h-3 w-3 text-emerald-600" />
-                <span className="truncate">
-                  {sourceTypeLabel(offer.sourceType)}
-                  {offer.lastVerifiedAt && <> · {timeAgo(offer.lastVerifiedAt)}</>}
-                </span>
-              </span>
-              <a href={offer.sourceUrl} target="_blank" rel="noopener noreferrer nofollow" draggable={false} className={sourceButton}>
-                Source ↗
-              </a>
-            </div>
+            <a
+              href={offer.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              draggable={false}
+              className="relative z-10 shrink-0 rounded-md border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition-colors duration-300 hover:bg-emerald-600 hover:text-white group-hover:border-emerald-600/60"
+            >
+              Source ↗
+            </a>
           </div>
         </div>
       </div>
@@ -190,41 +185,40 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
   );
 }
 
-// Mirrors the real card so nothing jumps when offers arrive: a picture-sized
-// placeholder cover over placeholder details (seen below it on touch screens).
+// Mirrors the real card's layout so nothing jumps when offers arrive.
 export function OfferCardSkeleton({ compact = false, index = 0 }) {
   return (
-    <div className={`skeleton-card relative flex flex-col pt-2.5 ${compact ? "w-56 shrink-0 sm:w-60" : ""}`} style={{ "--i": index }} aria-hidden="true">
-      <Rings count={compact ? 5 : 6} />
-      <div className="offer-pad relative flex flex-1 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5">
-        <div className="offer-cover">
-          <div className="offer-face skeleton">
-            <svg viewBox="0 0 24 24" className="absolute inset-0 m-auto h-9 w-9 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" strokeLinejoin="round" />
-              <circle cx="7.5" cy="7.5" r="1.5" />
-            </svg>
-          </div>
+    <div
+      className={`skeleton-card flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 sm:w-60" : ""}`}
+      style={{ "--i": index }}
+      aria-hidden="true"
+    >
+      <div className="skeleton relative aspect-[16/9]">
+        <div className="absolute bottom-2 left-2 h-6 w-16 rounded-md bg-white/70" />
+        <div className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white/70" />
+        <svg viewBox="0 0 24 24" className="absolute inset-0 m-auto h-8 w-8 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" strokeLinejoin="round" />
+          <circle cx="7.5" cy="7.5" r="1.5" />
+        </svg>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        <div className="skeleton h-3 w-2/5 rounded" />
+        <div className="space-y-1.5">
+          <div className="skeleton h-3.5 w-full rounded" />
+          <div className="skeleton h-3.5 w-4/5 rounded" />
         </div>
-        <div className="offer-under flex flex-1 flex-col gap-2 p-3 pt-5">
-          <div className="skeleton h-6 w-20 rounded-lg" />
-          <div className="skeleton h-3 w-2/5 rounded" />
-          <div className="space-y-1.5">
-            <div className="skeleton h-3.5 w-full rounded" />
-            <div className="skeleton h-3.5 w-4/5 rounded" />
+        <div className="flex gap-1">
+          <div className="skeleton h-4 w-20 rounded-md" />
+          {!compact && <div className="skeleton h-4 w-14 rounded-md" />}
+        </div>
+        <div className="mt-auto space-y-2 border-t border-slate-100 pt-2">
+          <div className="flex gap-2">
+            <div className="skeleton h-4 w-24 rounded-md" />
+            <div className="skeleton h-4 w-12 rounded-md" />
           </div>
-          <div className="flex gap-1">
-            <div className="skeleton h-4 w-20 rounded-md" />
-            {!compact && <div className="skeleton h-4 w-14 rounded-md" />}
-          </div>
-          <div className="mt-auto space-y-2 border-t border-slate-100 pt-2">
-            <div className="flex gap-2">
-              <div className="skeleton h-4 w-24 rounded-md" />
-              <div className="skeleton h-4 w-12 rounded-md" />
-            </div>
-            <div className="flex justify-between">
-              <div className="skeleton h-3 w-24 rounded" />
-              <div className="skeleton h-4 w-14 rounded-full" />
-            </div>
+          <div className="flex justify-between">
+            <div className="skeleton h-3 w-24 rounded" />
+            <div className="skeleton h-4 w-14 rounded-md" />
           </div>
         </div>
       </div>
