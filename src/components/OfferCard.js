@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { CATEGORIES, categoryLabel, sourceTypeLabel } from "@/lib/constants";
 import { AVAILABILITY_LABELS, discountLabel, formatMoney, timeAgo, validityLabel } from "@/lib/format";
 import { formatDistance } from "@/lib/geo";
 import { useBookmarks } from "./hooks";
+import OfferPicture from "./OfferPicture";
 
 const TONES = {
   ok: "bg-emerald-50 text-emerald-800",
@@ -38,28 +38,6 @@ export function StatusPill({ status }) {
   if (status === "active") return null;
   const label = { unverified: "Unverified", expired: "Expired", unavailable: "Unavailable" }[status] || status;
   return <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white dark:text-slate-50">{label}</span>;
-}
-
-// Wider than this is a logo or banner, not a photo.
-const LOGO_ASPECT = 2.6;
-
-// Source images come in every shape, so the picture is shown whole over a
-// blurred, enlarged copy of itself that fills the rest of the frame; wide logos
-// sit on plain white instead.
-function OfferImage({ src }) {
-  const [logo, setLogo] = useState(false);
-  // Source images are external; plain lazy imgs avoid proxying them through our server.
-  const img = { src, alt: "", loading: "lazy", decoding: "async", referrerPolicy: "no-referrer", draggable: false };
-  return (
-    <div className="offer-zoom absolute inset-0">
-      {!logo && <img {...img} aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-xl" />}
-      <img
-        {...img}
-        onLoad={(e) => setLogo(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight > LOGO_ASPECT)}
-        className={`relative h-full w-full object-contain ${logo ? "p-5" : ""}`}
-      />
-    </div>
-  );
 }
 
 const Icon = ({ d, className = "h-3.5 w-3.5" }) => (
@@ -98,11 +76,9 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
     >
       {/* Images sit on white in both themes: many are transparent logos with dark lettering. */}
       <div className="relative aspect-[16/9] overflow-hidden bg-[#fff]">
-        {offer.imageUrl ? <OfferImage src={offer.imageUrl} /> : (
-          <div className="offer-zoom grid h-full place-items-center bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 text-4xl font-bold text-emerald-800/70">
-            {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}
-          </div>
-        )}
+        <div className="offer-zoom absolute inset-0">
+          <OfferPicture offer={offer} />
+        </div>
         {discount && (
           <span className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
             {discount}

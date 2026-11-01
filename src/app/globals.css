@@ -183,9 +183,14 @@ html.dark .skeleton {
   background:
     radial-gradient(circle at 50% 46%, rgb(16 185 129 / 0.1), transparent 34%),
     var(--page);
+  /* Leaving: the logo and track drift up and fade first, then the whole
+     screen dissolves slowly into the page beneath. */
+  transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1) 0.25s;
+}
+.page-loader > * {
   transition:
-    opacity 0.45s ease,
-    visibility 0.45s;
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 html.dark .page-loader {
   background:
@@ -194,7 +199,11 @@ html.dark .page-loader {
 }
 .page-loader.is-done {
   opacity: 0;
-  visibility: hidden;
+  pointer-events: none;
+}
+.page-loader.is-done > * {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 @keyframes loader-breathe {
   0%,
@@ -321,6 +330,24 @@ html.dark .page-loader {
 }
 html.dark .offer-card:hover {
   box-shadow: 0 16px 32px -12px rgb(0 0 0 / 0.65);
+}
+
+/* Stand-in for a missing offer picture: a soft emerald wash with a faint
+   pattern of our % mark behind the logo, name and category. */
+.offer-placeholder {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23059669' stroke-opacity='0.09' stroke-width='2'%3E%3Ccircle cx='15' cy='15' r='3'/%3E%3Ccircle cx='27' cy='27' r='3'/%3E%3Cpath d='M28 14 14 28' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(circle at 50% 40%, rgb(255 255 255 / 0.9), transparent 60%),
+    linear-gradient(135deg, #ecfdf5, #f0fdfa 50%, #e2e8f0);
+}
+html.dark .offer-placeholder {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%2334d399' stroke-opacity='0.08' stroke-width='2'%3E%3Ccircle cx='15' cy='15' r='3'/%3E%3Ccircle cx='27' cy='27' r='3'/%3E%3Cpath d='M28 14 14 28' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(circle at 50% 40%, rgb(16 185 129 / 0.14), transparent 60%),
+    linear-gradient(135deg, #0f2a22, #10302c 50%, #121b2d);
+}
+html.dark .offer-placeholder .bg-white\/70 {
+  background-color: rgb(11 18 32 / 0.6);
 }
 
 /* Panels that open (More filters) slide down a little. */

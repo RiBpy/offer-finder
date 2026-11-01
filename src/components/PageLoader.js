@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 const TICK_MS = 30;
 const LEAVE_MS = 900; // the bike riding off to the right
-const FADE_MS = 450;
+const FADE_MS = 1300; // contents fade, then the screen dissolves (see .page-loader)
 
 // A bicycle pulling an iron ball on a chain; the ball carries the percentage.
 // One drawing (200 × 64) so the ball, chain and bike always line up.
@@ -98,6 +98,7 @@ export default function PageLoader({ progress = 0, done }) {
     }
   }, [phase, done, pct]);
 
+  // Once it starts fading the page beneath can be used; it stays only to finish fading.
   if (phase === "gone") return null;
   return (
     <div
