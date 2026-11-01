@@ -75,6 +75,10 @@ export const SKIPPED_NEWS_HOSTS = [
 const SHOP_SALE_NOTE =
   "This is an online shop's sale or campaign page listing many discounted products. Return at most ONE offer that summarises the sale (e.g. 'Up to 30% off Dabur products at Shajgoj'), with the highest discount shown as discountValue, not one offer per product. When products show only an old and a new price, work out the percentage saving from them.";
 
+// For a brand's home page, which shows its store-wide sale among single products.
+const HOME_SALE_NOTE =
+  "This is the brand's own page. Return at most ONE offer, only for a sale or discount on the whole store or a whole collection (e.g. 'Flat 20% off all products online'), with its biggest discount and any dates or conditions (e.g. online only). Title it with the brand's name. Do not return offers for single products, gift cards, or rewards for reviews or sign-ups. If nothing on the page says there is a sale, return no offer.";
+
 // Arogga is mainly a pharmacy; only its beauty and personal care sales are wanted.
 const BEAUTY_ONLY_NOTE = `${SHOP_SALE_NOTE} Only consider beauty and personal care products (skincare, haircare, makeup, body care, fragrance, grooming). Ignore medicines, supplements, vitamins, medical devices and baby food, and base the discount only on the beauty products. If the page has no beauty or personal care products on sale, return no offer. Start the title with the sale's own name shown on the page (e.g. 'Beauty Steals: up to 64% off beauty products at Arogga').`;
 
@@ -192,8 +196,9 @@ export const SITES = [
     category: "bags",
     recheckDays: 3,
   },
-  // Clothing brands. Aarong (aarong.com) builds its pages with JavaScript, so it
-  // cannot be read.
+  // Clothing brands. Aarong (aarong.com) and Sailor (sailor.clothing) build
+  // their pages with JavaScript, and Cats Eye (catseye.com.bd) is behind a bot
+  // check, so they cannot be read.
   {
     // Infinity Mega Mall's sale list (Richman and the other house brands).
     name: "Infinity",
@@ -206,7 +211,52 @@ export const SITES = [
     // Gentle Park's home page carries its store-wide sale banner (e.g. 20% off online).
     name: "Gentle Park",
     pages: ["https://gentlepark.com/"],
-    note: "This is the home page of Gentle Park, a clothing brand for men, women (Sofira) and kids (Pappa). Return at most ONE offer, only for a sale or discount on the whole store or a whole collection (e.g. 'Flat 20% off all products online at Gentle Park'), with its biggest discount and any dates or conditions (e.g. online only). Do not return offers for single products. If nothing on the page says there is a sale, return no offer.",
+    note: `Gentle Park sells clothing for men, women (Sofira) and kids (Pappa). ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    name: "Richman",
+    pages: ["https://richmanbd.com/product-category/sale/"],
+    note: `${SHOP_SALE_NOTE} Richman sells menswear, so set audience to men.`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    name: "Le Reve",
+    pages: ["https://www.lerevecraze.com/product-category/sale/"],
+    note: `${SHOP_SALE_NOTE} Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Also carries bundle deals ("Buy 3: 15% off") in its top banner.
+    name: "Ecstasy",
+    pages: ["https://ecstasybd.com/?page=sale"],
+    note: `${SHOP_SALE_NOTE} If the page also offers a store-wide deal (e.g. a discount for buying several items), mention it in the description. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    name: "Illiyeen",
+    pages: ["https://ilyn.global/bd/en/c/final-sale-3884"],
+    note: `This is the "Final Sale" section of ILLIYEEN, a clothing and lifestyle brand. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // No sale list of its own; its home page shows store-wide offers.
+    name: "Mens World",
+    pages: ["https://mensworld.com.bd/"],
+    note: `Mens World sells menswear, so set audience to men. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Yellow has no sale collection; a sale shows on its home page.
+    name: "Yellow",
+    pages: ["https://www.yellowclothing.net/"],
+    note: `Yellow sells clothing for men, women and kids. ${HOME_SALE_NOTE}`,
     category: "fashion",
     recheckDays: 3,
   },
