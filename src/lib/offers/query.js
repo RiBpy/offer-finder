@@ -195,6 +195,14 @@ function validityFilter(p) {
 
 const bankNamesRegex = (bank) => `\\b(${bank.names.map(escapeRegex).join("|")})\\b`;
 
+// A brand's offers: from its own site, or (for brands with `names`) news
+// offers naming it. No \b: it does not work next to Bangla letters.
+function storeMatch(store) {
+  if (!store.names) return { sourceName: store.sourceName };
+  const named = new RegExp(store.names.map(escapeRegex).join("|"), "i");
+  return { $or: [{ sourceName: store.sourceName }, { title: named }, { businessName: named }] };
+}
+
 // Position of an offer's bank in BANKS (same test as the bank filter), or
 // BANKS.length for offers that are not bank card offers.
 const BANK_RANK = {
@@ -242,7 +250,7 @@ function attributeFilters(p, now) {
     and.push({ $or: [{ sourceName: bank.sourceName }, { title: named }] });
   }
   if (p.audience) and.push(forAudience(p.audience));
-  if (p.store) and.push({ sourceName: STORES.find((s) => s.id === p.store).sourceName });
+  if (p.store) and.push(storeMatch(STORES.find((s) => s.id === p.store)));
   if (p.availability === "online") and.push({ availabilityType: { $in: ["online", "both"] } });
   if (p.availability === "online_only") and.push({ availabilityType: "online" });
   if (p.availability === "in_store") and.push({ availabilityType: { $in: ["in_store", "both"] } });
@@ -385,6 +393,7 @@ export function buildCountsPipeline(p, now = new Date()) {
         byCategory: perCategory,
         ...Object.fromEntries(AUDIENCE_IDS.map((id) => [`audience_${id}`, [{ $match: forAudience(id) }, ...perCategory]])),
         byStore: [{ $match: { sourceName: { $in: STORES.map((s) => s.sourceName) } } }, { $group: { _id: "$sourceName", n: { $sum: 1 } } }],
+        ...Object.fromEntries(STORES.filter((s) => s.names).map((s) => [`store_${s.id}`, [{ $match: storeMatch(s) }, { $count: "n" }]])),
         byBank: [{ $group: { _id: BANK_RANK, n: { $sum: 1 } } }],
       },
     },
@@ -402,7 +411,7 @@ async function countOffers(db, params, now) {
     categories: byId(res?.byCategory),
     // { men: { fashion: 3, … }, … }: offers for that audience (or everyone) per category.
     audiences: Object.fromEntries(AUDIENCE_IDS.map((id) => [id, byId(res?.[`audience_${id}`])])),
-    stores: Object.fromEntries(STORES.map((s) => [s.id, stores[s.sourceName] ?? 0])),
+    stores: Object.fromEntries(STORES.map((s) => [s.id, (s.names ? res?.[`store_${s.id}`]?.[0]?.n : stores[s.sourceName]) ?? 0])),
     banks: Object.fromEntries(BANKS.map((b, i) => [b.id, banks[i] ?? 0])),
   };
 }

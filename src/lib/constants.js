@@ -28,13 +28,15 @@ export const AUDIENCES = [
 export const AUDIENCE_IDS = AUDIENCES.map((a) => a.id);
 
 // Brands and shops with their own source (discovery/config.js), for the Brands
-// filter. `sourceName` matches the site name there.
+// filter. `sourceName` matches the site name there; `names` also takes in news
+// offers that name the brand (for brands whose site cannot be read).
 export const STORES = [
   { id: "daraz", label: "Daraz", sourceName: "Daraz" },
   { id: "othoba", label: "Othoba", sourceName: "Othoba" },
   { id: "apex", label: "Apex", sourceName: "Apex" },
   { id: "bata", label: "Bata", sourceName: "Bata" },
   { id: "lotto", label: "Lotto", sourceName: "Lotto" },
+  { id: "aarong", label: "Aarong", sourceName: "Aarong", names: ["Aarong", "আড়ং"] },
   { id: "infinity", label: "Infinity", sourceName: "Infinity" },
   { id: "gentle-park", label: "Gentle Park", sourceName: "Gentle Park" },
   { id: "plus-point", label: "Plus Point", sourceName: "Plus Point" },
