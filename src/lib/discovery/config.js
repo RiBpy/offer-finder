@@ -49,6 +49,9 @@ export const SEARCHES = [
   // aarong.com builds its pages with JavaScript, so Aarong sales come from news.
   "Aarong discount",
   "Aarong sale offer",
+  // Walkar (PRAN-RFL footwear) has no online shop to read; its sales come from news.
+  "Walkar discount",
+  "Walkar footwear offer",
 ];
 
 // Bangla searches mostly return Indian (West Bengal) outlets writing about
@@ -264,10 +267,10 @@ export const SITES = [
     recheckDays: 3,
   },
   {
-    // Walker Lifestyle's home page lists its discounted shirts, polos and jeans.
-    name: "Walker",
-    pages: ["https://walkerlifestyle.com/"],
-    note: `${SHOP_SALE_NOTE} Title it with Walker Lifestyle. It sells menswear, so set audience to men.`,
+    // Aeroblue's shop filtered to discounted items ("0 products found" when no sale is on).
+    name: "Aeroblue",
+    pages: ["https://aeroblue.global/shop?discount=1"],
+    note: `${SHOP_SALE_NOTE} Title it with Aeroblue. It sells menswear, so set audience to men. If the page says no products were found, return no offer.`,
     category: "fashion",
     recheckDays: 3,
   },
