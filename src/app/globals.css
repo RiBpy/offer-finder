@@ -423,6 +423,61 @@ html.dark .offer-placeholder .bg-white\/70 {
   background-color: rgb(11 18 32 / 0.6);
 }
 
+/* Offer page. A soft "aurora" of brand-coloured light behind the top of the
+   page; the hero (picture and headline in one card) with a brand glow under
+   it; the headline in a brand gradient lit from its top corner. */
+.offer-aurora {
+  position: absolute;
+  inset: -2rem 0 auto;
+  height: 34rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 55% at 12% 18%, color-mix(in srgb, var(--brand-400) 32%, transparent), transparent 70%),
+    radial-gradient(34% 50% at 88% 6%, color-mix(in srgb, var(--brand-accent-light) 28%, transparent), transparent 70%),
+    radial-gradient(30% 40% at 55% 55%, color-mix(in srgb, var(--brand-200) 40%, transparent), transparent 70%);
+  filter: blur(24px);
+  /* Fades out downwards and towards both sides, so it never shows an edge
+     (it stays within the content area, which clips anything wider). */
+  mask-image:
+    linear-gradient(#000 55%, transparent),
+    linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-composite: intersect;
+}
+html.dark .offer-aurora {
+  opacity: 0.55;
+}
+.offer-hero {
+  box-shadow: 0 30px 60px -32px color-mix(in srgb, var(--brand-700) 65%, transparent);
+}
+.offer-headline {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.28), transparent 50%),
+    linear-gradient(135deg, var(--brand-700), var(--brand-accent));
+}
+.offer-headline::before {
+  /* A faint ring of light in its top corner. */
+  content: "";
+  position: absolute;
+  right: -4rem;
+  top: -4rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 9999px;
+  border: 1.5rem solid rgb(255 255 255 / 0.08);
+  pointer-events: none;
+}
+/* "You may also like" sits in its own tinted panel, so it reads as a separate section. */
+.related-panel {
+  background:
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--brand-accent-light) 14%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--brand-50), color-mix(in srgb, var(--brand-50) 40%, var(--surface)));
+}
+/* The carousel row fades out at both ends, where the side cards trail off. */
+.related-track {
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+
 /* Panels that open (More filters) slide down a little. */
 @keyframes panel-in {
   from {
