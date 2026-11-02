@@ -109,7 +109,7 @@ html.theme-switching * {
 /* Large screens: a sideways row fades out at its right edge, where it scrolls on. */
 @media (min-width: 1024px) {
   .row-fade {
-    mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), rgb(0 0 0 / 0.35));
   }
 }
 
