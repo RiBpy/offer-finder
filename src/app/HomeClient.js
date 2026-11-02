@@ -119,6 +119,7 @@ export default function HomeClient() {
   const discoveryStarted = useRef(false);
   const scrollRestored = useRef(false);
   const resultsRef = useRef(null);
+  const sidebarRef = useRef(null);
   const lastParamsKey = useRef(null);
 
   useEffect(() => {
@@ -226,6 +227,25 @@ export default function HomeClient() {
       el.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
     }
   }, [paramsKey]);
+
+  // The filter sidebar scrolls on its own, so it must end on screen: until it
+  // sticks under the header it starts lower down, so its height follows the
+  // space left below its top edge (16px gap at the bottom).
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return;
+    const fit = () => {
+      const top = el.getBoundingClientRect().top;
+      el.style.maxHeight = `${Math.max(document.documentElement.clientHeight - top - 16, 240)}px`;
+    };
+    fit();
+    window.addEventListener("scroll", fit, { passive: true });
+    window.addEventListener("resize", fit);
+    return () => {
+      window.removeEventListener("scroll", fit);
+      window.removeEventListener("resize", fit);
+    };
+  }, []);
 
   // Coming back from an offer: once the list has loaded, return to where it was.
   useEffect(() => {
@@ -384,7 +404,7 @@ export default function HomeClient() {
         {/* Large screens: the filter menu is a sidebar; phones and tablets open it as a drawer. */}
         <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8">
           <aside aria-label="Filters" className="hidden lg:block">
-            <div className="no-scrollbar sticky top-[86px] max-h-[calc(100vh-102px)] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 pb-4">
+            <div ref={sidebarRef} className="no-scrollbar sticky top-[86px] max-h-[calc(100vh-102px)] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 pb-4">
               <FilterMenu filters={filters} setFilters={setFilters} counts={counts} hasCoords={location?.lat != null} hasCity={Boolean(location?.city)} />
             </div>
           </aside>
