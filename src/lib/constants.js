@@ -46,6 +46,8 @@ export const STORES = [
   { id: "illiyeen", label: "Illiyeen", sourceName: "Illiyeen" },
   { id: "mens-world", label: "Mens World", sourceName: "Mens World" },
   { id: "yellow", label: "Yellow", sourceName: "Yellow" },
+  { id: "easy", label: "Easy", sourceName: "Easy" },
+  { id: "walker", label: "Walker", sourceName: "Walker" },
   { id: "shajgoj", label: "Shajgoj", sourceName: "Shajgoj" },
   { id: "arogga", label: "Arogga", sourceName: "Arogga" },
   { id: "shwapno", label: "Shwapno", sourceName: "Shwapno" },

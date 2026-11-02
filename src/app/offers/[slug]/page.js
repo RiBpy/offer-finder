@@ -7,6 +7,7 @@ import { categoryLabel, sourceTypeLabel } from "@/lib/constants";
 import { AVAILABILITY_LABELS, discountLabel, formatDateTime, formatMoney, timeAgo } from "@/lib/format";
 import { SimpleHeader, Footer, BottomNav } from "@/components/SiteChrome";
 import { BookmarkButton } from "@/components/OfferCard";
+import OfferPicture from "@/components/OfferPicture";
 import { BackToListLink } from "@/components/ReturnLink";
 
 export const dynamic = "force-dynamic";
@@ -86,9 +87,12 @@ export default async function OfferPage({ params }) {
         )}
 
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          {offer.imageUrl && (
-            <img src={offer.imageUrl} alt="" referrerPolicy="no-referrer" className="aspect-[16/9] w-full bg-[#fff] object-contain" />
-          )}
+          <div className="relative aspect-[16/9] w-full overflow-hidden">
+            <OfferPicture
+              offer={{ imageUrl: offer.imageUrl, businessName: offer.businessName, brandName: offer.brandName, sourceName: offer.sourceName, primaryCategory: offer.primaryCategory }}
+              variant="hero"
+            />
+          </div>
           <div className="space-y-4 p-5 sm:p-6">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-700">{categoryLabel(offer.primaryCategory)}</span>

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { CATEGORIES, categoryLabel, sourceTypeLabel } from "@/lib/constants";
 import { AVAILABILITY_LABELS, discountLabel, formatMoney, timeAgo, validityLabel } from "@/lib/format";
 import { formatDistance } from "@/lib/geo";
 import { useBookmarks } from "./hooks";
+import OfferPicture from "./OfferPicture";
 
 const TONES = {
   ok: "bg-emerald-50 text-emerald-800",
@@ -40,27 +40,6 @@ export function StatusPill({ status }) {
   return <span className="rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white dark:text-slate-50">{label}</span>;
 }
 
-// Wider than this is a logo or banner, not a photo: show it whole instead of cropping it to fill the box.
-const LOGO_ASPECT = 2.6;
-
-function OfferImage({ src }) {
-  const [logo, setLogo] = useState(false);
-  return (
-    // Source images are external and vary in size; a plain lazy img avoids
-    // proxying third-party images through our server.
-    <img
-      src={src}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      draggable={false}
-      onLoad={(e) => setLogo(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight > LOGO_ASPECT)}
-      className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${logo ? "object-contain p-4" : "object-cover"}`}
-    />
-  );
-}
-
 const Icon = ({ d, className = "h-3.5 w-3.5" }) => (
   <svg aria-hidden="true" viewBox="0 0 24 24" className={`shrink-0 ${className}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d={d} />
@@ -71,17 +50,6 @@ const PIN = "M12 21s-7-6.1-7-11.5a7 7 0 0 1 14 0C19 14.9 12 21 12 21Zm0-9a2.5 2.
 const CHECK = "m5 12.5 4.5 4.5L19 7.5";
 
 const chip = "inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-medium text-slate-700";
-
-// The dashed "tear here" line of a coupon, with a notch cut into each side.
-function TearLine() {
-  return (
-    <div aria-hidden="true" className="relative -mx-3 mb-2 h-4">
-      <span className="absolute left-0 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-slate-200 bg-[var(--page)]" />
-      <span className="absolute inset-x-4 top-1/2 border-t-2 border-dashed border-slate-200" />
-      <span className="absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 translate-x-1/2 rounded-full border border-slate-200 bg-[var(--page)]" />
-    </div>
-  );
-}
 
 /** `index` staggers the card's entrance animation within the batch it arrived in. */
 export default function OfferCard({ offer, compact = false, index = 0 }) {
@@ -104,33 +72,30 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
   return (
     <article
       style={{ "--i": index }}
-      className={`card-in group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 transition duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-900/10 ${compact ? "w-56 shrink-0 snap-start sm:w-60" : ""}`}
+      className={`offer-card card-in relative flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 snap-start sm:w-60" : ""}`}
     >
       {/* Images sit on white in both themes: many are transparent logos with dark lettering. */}
-      <div className={`relative aspect-[16/9] overflow-hidden ${offer.imageUrl ? "bg-[#fff]" : ""}`}>
-        {offer.imageUrl ? <OfferImage src={offer.imageUrl} /> : (
-          <div className="grid h-full place-items-center bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 text-3xl font-bold text-emerald-800/70">
-            {(offer.brandName || offer.businessName || offer.title).slice(0, 1).toUpperCase()}
-          </div>
-        )}
+      <div className="relative aspect-[16/9] overflow-hidden bg-[#fff]">
+        <div className="offer-zoom absolute inset-0">
+          <OfferPicture offer={offer} />
+        </div>
         {discount && (
-          <span className="absolute left-2 top-2 max-w-[72%] truncate rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
+          <span className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
             {discount}
           </span>
         )}
-        <BookmarkButton id={offer.id} title={offer.title} className="absolute right-2 top-2 z-10" />
         {offer.validationStatus !== "active" && (
-          <span className="absolute bottom-2 left-2">
+          <span className="absolute bottom-2 right-2">
             <StatusPill status={offer.validationStatus} />
           </span>
         )}
+        <BookmarkButton id={offer.id} title={offer.title} className="absolute right-2 top-2 z-10" />
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3">
+      <div className="relative flex flex-1 flex-col gap-2 p-3">
         {seller && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{seller}</p>}
-
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">
-          <Link href={`/offers/${offer.slug}`} draggable={false} className="after:absolute after:inset-0 focus-visible:outline-none">
+          <Link href={`/offers/${offer.slug}`} draggable={false} className="after:absolute after:inset-0 after:z-[1] focus-visible:outline-none">
             {offer.title}
           </Link>
         </h3>
@@ -151,9 +116,8 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
           {!compact && offer.isBrandOffer && <span className="rounded-md bg-violet-50 px-1.5 py-0.5 font-medium text-violet-800">Brand offer</span>}
         </div>
 
-        <div className="mt-auto">
-          <TearLine />
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-600">
+        <div className="mt-auto space-y-2 border-t border-slate-100 pt-2 text-[11px]">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-slate-600">
             <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold ${TONES[v.tone]}`}>
               <Icon d={CLOCK} className="h-3 w-3" />
               {v.text}
@@ -165,7 +129,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
               </span>
             )}
           </div>
-          <div className="mt-2 flex min-w-0 items-center justify-between gap-2 text-[11px] text-slate-500">
+          <div className="flex min-w-0 items-center justify-between gap-2 text-slate-500">
             <span className="inline-flex min-w-0 items-center gap-1">
               <Icon d={CHECK} className="h-3 w-3 text-emerald-600" />
               <span className="truncate">
@@ -178,7 +142,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
               target="_blank"
               rel="noopener noreferrer nofollow"
               draggable={false}
-              className="relative z-10 shrink-0 rounded-full border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition hover:bg-emerald-50"
+              className="relative z-10 shrink-0 rounded-md border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white"
             >
               Source ↗
             </a>
@@ -193,12 +157,12 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
 export function OfferCardSkeleton({ compact = false, index = 0 }) {
   return (
     <div
-      className={`skeleton-card flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 sm:w-60" : ""}`}
+      className={`skeleton-card flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 ${compact ? "w-56 shrink-0 sm:w-60" : ""}`}
       style={{ "--i": index }}
       aria-hidden="true"
     >
       <div className="skeleton relative aspect-[16/9]">
-        <div className="absolute left-2 top-2 h-6 w-16 rounded-lg bg-white/70" />
+        <div className="absolute bottom-2 left-2 h-6 w-16 rounded-md bg-white/70" />
         <div className="absolute right-2 top-2 h-8 w-8 rounded-full bg-white/70" />
         <svg viewBox="0 0 24 24" className="absolute inset-0 m-auto h-8 w-8 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" strokeLinejoin="round" />
@@ -215,15 +179,14 @@ export function OfferCardSkeleton({ compact = false, index = 0 }) {
           <div className="skeleton h-4 w-20 rounded-md" />
           {!compact && <div className="skeleton h-4 w-14 rounded-md" />}
         </div>
-        <div className="mt-auto">
-          <TearLine />
+        <div className="mt-auto space-y-2 border-t border-slate-100 pt-2">
           <div className="flex gap-2">
             <div className="skeleton h-4 w-24 rounded-md" />
             <div className="skeleton h-4 w-12 rounded-md" />
           </div>
-          <div className="mt-2 flex justify-between">
+          <div className="flex justify-between">
             <div className="skeleton h-3 w-24 rounded" />
-            <div className="skeleton h-4 w-14 rounded-full" />
+            <div className="skeleton h-4 w-14 rounded-md" />
           </div>
         </div>
       </div>

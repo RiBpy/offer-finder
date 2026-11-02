@@ -31,7 +31,7 @@ export default function ThemeToggle({ className = "" }) {
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       title={dark ? "Light mode" : "Dark mode"}
-      className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-90 ${className}`}
+      className={`grid h-10 w-10 shrink-0 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 active:scale-90 ${className}`}
     >
       {dark === null ? (
         <span className="h-4 w-4" aria-hidden="true" />
