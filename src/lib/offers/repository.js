@@ -153,6 +153,38 @@ export async function getPublicOffersByIds(db, ids, now = new Date()) {
   return docs.map(toPublicOffer);
 }
 
+const RELATED_LIMIT = 10;
+const exactly = (s) => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+
+/**
+ * "You may also like" for an offer page: live offers from the same brand or
+ * business first, then the same category, newest first, never the offer itself.
+ */
+export async function getRelatedOffers(db, offer, now = new Date()) {
+  const live = { $and: [activeNowFilter(now), { $or: [{ startDate: null }, { startDate: { $lte: now } }] }, { slug: { $ne: offer.slug } }] };
+  const sort = { publishedAt: -1, createdAt: -1 };
+  const seller = [...new Set([offer.brandName, offer.businessName].filter(Boolean))];
+  const sameSeller = seller.length
+    ? await db
+        .collection("offers")
+        .find({ ...live, $or: seller.flatMap((n) => [{ brandName: exactly(n) }, { businessName: exactly(n) }]) }, { projection: PUBLIC_PROJECTION })
+        .sort(sort)
+        .limit(RELATED_LIMIT)
+        .toArray()
+    : [];
+  const seen = sameSeller.map((d) => d._id);
+  const sameCategory =
+    sameSeller.length < RELATED_LIMIT && offer.primaryCategory
+      ? await db
+          .collection("offers")
+          .find({ ...live, _id: { $nin: seen }, categories: offer.primaryCategory }, { projection: PUBLIC_PROJECTION })
+          .sort(sort)
+          .limit(RELATED_LIMIT - sameSeller.length)
+          .toArray()
+      : [];
+  return [...sameSeller, ...sameCategory].map(toPublicOffer);
+}
+
 export async function incrementViews(db, slug) {
   await db.collection("offers").updateOne({ slug }, { $inc: { viewCount: 1 } });
 }

@@ -423,6 +423,61 @@ html.dark .offer-placeholder .bg-white\/70 {
   background-color: rgb(11 18 32 / 0.6);
 }
 
+/* Offer page. A soft "aurora" of brand-coloured light behind the top of the
+   page; the picture in a frame with a brand glow under it; the headline card
+   in a brand gradient lit from its top corner; a glowing call-to-action. */
+.offer-aurora {
+  position: absolute;
+  inset: -2rem -2rem auto;
+  height: 34rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 55% at 12% 18%, color-mix(in srgb, var(--brand-400) 32%, transparent), transparent 70%),
+    radial-gradient(34% 50% at 88% 6%, color-mix(in srgb, var(--brand-accent-light) 28%, transparent), transparent 70%),
+    radial-gradient(30% 40% at 55% 55%, color-mix(in srgb, var(--brand-200) 40%, transparent), transparent 70%);
+  filter: blur(24px);
+  mask-image: linear-gradient(#000 55%, transparent);
+}
+html.dark .offer-aurora {
+  opacity: 0.55;
+}
+.offer-frame {
+  box-shadow:
+    0 30px 60px -30px color-mix(in srgb, var(--brand-700) 55%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--brand-700) 8%, transparent);
+}
+.offer-headline {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.28), transparent 50%),
+    linear-gradient(135deg, var(--brand-700), var(--brand-accent));
+  box-shadow: 0 24px 48px -24px color-mix(in srgb, var(--brand-700) 70%, transparent);
+}
+.offer-headline::before {
+  /* A faint ring of light in its top corner. */
+  content: "";
+  position: absolute;
+  right: -4rem;
+  top: -4rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 9999px;
+  border: 1.5rem solid rgb(255 255 255 / 0.08);
+  pointer-events: none;
+}
+.offer-cta {
+  background: linear-gradient(135deg, var(--brand-700), var(--brand-accent));
+  box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--brand-700) 70%, transparent);
+}
+.offer-cta:hover {
+  box-shadow: 0 16px 30px -10px color-mix(in srgb, var(--brand-700) 85%, transparent);
+  filter: brightness(1.08);
+}
+.related-stack:focus-visible {
+  outline-offset: 8px;
+  border-radius: 1rem;
+}
+
 /* Panels that open (More filters) slide down a little. */
 @keyframes panel-in {
   from {
