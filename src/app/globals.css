@@ -1,41 +1,48 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   BRAND COLOURS: change the site's colour here, and only here.
-   Every brand-coloured thing reads these variables: buttons, badges, links,
-   discount tags, hover and focus states, the header and footer accents, the
-   logo, the loader and the picture placeholder (light and dark themes).
-   --brand-700 is the main colour; lower numbers are lighter tints (pale
-   backgrounds, hovers), higher ones darker shades. --brand-accent is the
-   second colour of gradients. --brand-ink is brand-coloured text, which must
-   stay readable on the page (it turns light in the dark theme).
-   Two files can't read CSS and keep their own copy of --brand-700:
-   src/app/icon.svg (the favicon) and themeColor in src/app/layout.js.
+   BRAND COLOURS: the site has two, one per theme. Change them here, and only
+   here; everything brand-coloured follows (buttons, badges, links, discount
+   tags, hover and focus states, header and footer accents, logo, loader,
+   picture placeholder). Two files can't read CSS and keep their own copy of
+   the light-mode colour: src/app/icon.svg (favicon) and themeColor in
+   src/app/layout.js.
    ========================================================================= */
 :root {
-  --brand-50: #eef3f9;
-  --brand-100: #dbe5f1;
-  --brand-200: #b7cbe3;
-  --brand-300: #8aa8cf;
-  --brand-400: #5a80b3;
-  --brand-500: #345d93;
-  --brand-600: #24477a;
-  --brand-700: #1b365d;
-  --brand-800: #152a49;
-  --brand-900: #0f1f36;
-  --brand-accent: #2c5a8f;
-  --brand-accent-light: #3b6ea8;
+  --brand-light-mode: #1b365d; /* navy */
+  --brand-dark-mode: #059669; /* green */
+}
+
+/* Everything below is worked out from the two colours above: no need to edit it.
+   --brand is the current theme's colour. --brand-700 is the brand itself;
+   lower numbers are paler tints (backgrounds, hovers), higher ones deeper
+   shades; --brand-accent is the lighter end of gradients; --brand-ink is
+   brand-coloured text, which turns light in the dark theme to stay readable. */
+:root {
+  --brand: var(--brand-light-mode);
+  --brand-tint-base: #fff; /* what pale tints are mixed into */
+  --brand-50: color-mix(in srgb, var(--brand) 7%, var(--brand-tint-base));
+  --brand-100: color-mix(in srgb, var(--brand) 15%, var(--brand-tint-base));
+  --brand-200: color-mix(in srgb, var(--brand) 30%, var(--brand-tint-base));
+  --brand-300: color-mix(in srgb, var(--brand) 48%, var(--brand-tint-base));
+  --brand-400: color-mix(in srgb, var(--brand) 66%, var(--brand-tint-base));
+  --brand-500: color-mix(in srgb, var(--brand) 82%, #fff);
+  --brand-600: color-mix(in srgb, var(--brand) 92%, #fff);
+  --brand-700: var(--brand);
+  --brand-800: color-mix(in srgb, var(--brand) 82%, #000);
+  --brand-900: color-mix(in srgb, var(--brand) 65%, #000);
+  --brand-accent: color-mix(in srgb, var(--brand) 78%, #fff);
+  --brand-accent-light: color-mix(in srgb, var(--brand) 62%, #fff);
   --brand-ink: var(--brand-700);
   --brand-ink-strong: var(--brand-800);
   --brand-ink-accent: var(--brand-accent-light);
 }
 html.dark {
-  /* Pale tints become deep ones; text turns light so it reads on dark. */
-  --brand-50: #121f35;
-  --brand-100: #1a2d4d;
-  --brand-ink: #9fbbe0;
-  --brand-ink-strong: #c7d8ee;
-  --brand-ink-accent: #c7d8ee;
+  --brand: var(--brand-dark-mode);
+  --brand-tint-base: #0b1220; /* pale tints become deep ones on the dark page */
+  --brand-ink: color-mix(in srgb, var(--brand) 55%, #fff);
+  --brand-ink-strong: color-mix(in srgb, var(--brand) 35%, #fff);
+  --brand-ink-accent: color-mix(in srgb, var(--brand) 35%, #fff);
 }
 
 @theme inline {
