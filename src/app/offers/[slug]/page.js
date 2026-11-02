@@ -136,15 +136,37 @@ export default async function OfferPage({ params }) {
 
         {/* Large screens: picture and "You may also like" on the left, details on the right.
             Phones: picture, details, then "You may also like". */}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
-          <div className="offer-frame relative aspect-[16/9] overflow-hidden rounded-3xl border border-white/60 lg:col-start-1 lg:row-start-1">
-            <OfferPicture
-              offer={{ imageUrl: offer.imageUrl, businessName: offer.businessName, brandName: offer.brandName, sourceName: offer.sourceName, primaryCategory: offer.primaryCategory }}
-              variant="hero"
-            />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
+          {/* Left column: the picture on its own, then "You may also like" as a separate,
+              tinted section. The details sit in a white panel on the right. On phones the
+              left column's parts fall into the page order around the details. */}
+          <div className="contents lg:col-start-1 lg:row-start-1 lg:block lg:space-y-8">
+            <div className="offer-frame relative order-1 aspect-[16/9] overflow-hidden rounded-3xl">
+              <OfferPicture
+                offer={{ imageUrl: offer.imageUrl, businessName: offer.businessName, brandName: offer.brandName, sourceName: offer.sourceName, primaryCategory: offer.primaryCategory }}
+                variant="hero"
+              />
+            </div>
+
+            {related.length > 0 && (
+              <section aria-labelledby="related-title" className="related-panel order-3 rounded-3xl border border-brand-100 p-4 sm:p-5">
+                <div className="mb-5 flex items-start gap-3 border-b border-brand-100 pb-4">
+                  <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-700 text-lg text-white shadow-md">
+                    ✨
+                  </span>
+                  <div>
+                    <h2 id="related-title" className="text-lg font-semibold text-slate-900">You may also like</h2>
+                    <p className="text-sm text-slate-500">
+                      {fromSameSeller ? `More from ${sellerName}, and similar offers` : `More ${categoryLabel(offer.primaryCategory).toLowerCase()} offers`} · drag the card or use the arrows
+                    </p>
+                  </div>
+                </div>
+                <RelatedStack offers={related.map(stackFields)} />
+              </section>
+            )}
           </div>
 
-          <article className="space-y-5 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <article className="order-2 space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5 lg:col-start-2 lg:row-start-1">
             <header className="offer-headline relative overflow-hidden rounded-3xl p-5 text-white sm:p-6">
               <div className="relative flex items-start justify-between gap-4">
                 <div className="min-w-0 space-y-3">
@@ -265,18 +287,6 @@ export default async function OfferPage({ params }) {
               Summary written from the original source. Terms, availability and participating branches can change; always confirm with the business.
             </p>
           </article>
-
-          {related.length > 0 && (
-            <section aria-labelledby="related-title" className="lg:col-start-1 lg:row-start-2">
-              <div className="mb-4">
-                <h2 id="related-title" className="text-lg font-semibold text-slate-900">You may also like</h2>
-                <p className="text-sm text-slate-500">
-                  {fromSameSeller ? `More from ${sellerName}, and similar offers` : `More ${categoryLabel(offer.primaryCategory).toLowerCase()} offers`} · drag the card or use the arrows
-                </p>
-              </div>
-              <RelatedStack offers={related.map(stackFields)} />
-            </section>
-          )}
         </div>
       </main>
       {status === "active" && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(offer) }} />}

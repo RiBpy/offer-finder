@@ -443,9 +443,7 @@ html.dark .offer-aurora {
   opacity: 0.55;
 }
 .offer-frame {
-  box-shadow:
-    0 30px 60px -30px color-mix(in srgb, var(--brand-700) 55%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--brand-700) 8%, transparent);
+  box-shadow: 0 24px 48px -28px color-mix(in srgb, var(--brand-700) 55%, transparent);
 }
 .offer-headline {
   background:
@@ -472,6 +470,12 @@ html.dark .offer-aurora {
 .offer-cta:hover {
   box-shadow: 0 16px 30px -10px color-mix(in srgb, var(--brand-700) 85%, transparent);
   filter: brightness(1.08);
+}
+/* "You may also like" sits in its own tinted panel, so it reads as a separate section. */
+.related-panel {
+  background:
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--brand-accent-light) 14%, transparent), transparent 60%),
+    linear-gradient(180deg, var(--brand-50), color-mix(in srgb, var(--brand-50) 40%, var(--surface)));
 }
 .related-stack:focus-visible {
   outline-offset: 8px;
