@@ -8,7 +8,7 @@ import { AVAILABILITY_LABELS, discountLabel, formatDateTime, formatMoney, timeAg
 import { SimpleHeader, Footer, BottomNav } from "@/components/SiteChrome";
 import { BookmarkButton } from "@/components/OfferCard";
 import OfferPicture from "@/components/OfferPicture";
-import RelatedStack from "@/components/RelatedStack";
+import RelatedCarousel from "@/components/RelatedCarousel";
 import { BackToListLink } from "@/components/ReturnLink";
 
 export const dynamic = "force-dynamic";
@@ -58,10 +58,10 @@ const ICONS = {
 };
 
 // One fact about the offer, as a small tile with an icon.
-function Fact({ icon, label, children, wide = false }) {
+function Fact({ icon, label, children }) {
   if (children == null || children === false || children === "") return null;
   return (
-    <div className={`flex gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3 ${wide ? "sm:col-span-2" : ""}`}>
+    <div className="flex gap-3 rounded-xl border border-slate-200/80 bg-white/70 p-3">
       <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-ink">
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d={ICONS[icon]} />
@@ -75,7 +75,7 @@ function Fact({ icon, label, children, wide = false }) {
   );
 }
 
-// What the "You may also like" stack needs of each offer.
+// What the "You may also like" carousel needs of each offer.
 const stackFields = (o) => ({
   id: o.id,
   slug: o.slug,
@@ -180,17 +180,17 @@ export default async function OfferPage({ params }) {
           </header>
         </section>
 
-        {/* Below: the details on the left, "You may also like" on the right (it stays in
-            view while the details scroll on large screens). Phones: details, then the stack. */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:items-start lg:gap-8">
-          <article className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-6">
+        {/* Details: one full-width panel; the description, branches and terms on the
+            left, the key facts in a column on the right (stacked on phones). */}
+        <article className="mt-6 grid gap-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-10 lg:p-8">
+          <div className="min-w-0 space-y-6">
             {offer.description && (
               <section>
-                <h2 className="mb-2 font-semibold text-slate-900">About this offer</h2>
+                <h2 className="mb-2 text-lg font-semibold text-slate-900">About this offer</h2>
                 <div className="whitespace-pre-line leading-relaxed text-slate-700">{offer.description}</div>
+                {offer.originalPrice != null && offer.discountedPrice != null && <p className="mt-2 text-xs text-slate-500">Prices as stated by the source.</p>}
               </section>
             )}
-            {offer.originalPrice != null && offer.discountedPrice != null && <p className="text-xs text-slate-500">Prices as stated by the source.</p>}
             {offer.tags?.length > 0 && (
               <div className="flex flex-wrap gap-1.5 text-xs">
                 {offer.tags.map((t) => (
@@ -199,12 +199,56 @@ export default async function OfferPage({ params }) {
               </div>
             )}
 
-            <dl className="grid gap-2 sm:grid-cols-2">
+            {offer.scope === "local" && offer.eligibleLocations?.length > 0 && (
+              <section>
+                <h2 className="mb-2 font-semibold text-slate-900">Participating locations</h2>
+                <ul className="grid gap-2 text-sm sm:grid-cols-2">
+                  {offer.eligibleLocations.map((l, i) => (
+                    <li key={i} className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                      <div className="font-medium">{l.name || l.address}</div>
+                      {l.name && l.address && <div className="text-slate-600">{l.address}</div>}
+                      {l.city && <div className="text-slate-500">{l.city}</div>}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {offer.terms && (
+              <section>
+                <h2 className="mb-2 font-semibold text-slate-900">Terms</h2>
+                <p className="whitespace-pre-line rounded-xl border-l-4 border-brand-600 bg-brand-50 p-4 text-sm text-slate-700">{offer.terms}</p>
+              </section>
+            )}
+
+            {offer.alternateSources?.length > 0 && (
+              <section>
+                <h2 className="mb-2 font-semibold text-slate-900">Also reported by</h2>
+                <ul className="list-inside list-disc text-sm">
+                  {offer.alternateSources.map((s) => (
+                    <li key={s.url}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-ink hover:underline">
+                        {s.sourceName || new URL(s.url).hostname}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <p className="text-xs text-slate-500">
+              Summary written from the original source. Terms, availability and participating branches can change; always confirm with the business.
+            </p>
+          </div>
+
+          <aside aria-labelledby="facts-title" className="min-w-0 lg:border-l lg:border-slate-100 lg:pl-10">
+            <h2 id="facts-title" className="mb-3 text-lg font-semibold text-slate-900">Offer details</h2>
+            <dl className="grid gap-2">
               <Fact icon="status" label="Status">{STATUS_LABELS[status]}</Fact>
               <Fact icon="start" label="Starts">{offer.startDate && formatDateTime(offer.startDate, tz)}</Fact>
               <Fact icon="end" label="Ends">{offer.endDate ? formatDateTime(offer.endDate, tz) : "No end date stated by the source"}</Fact>
               <Fact icon="published" label="Published">{offer.publishedAt && formatDateTime(offer.publishedAt, tz)}</Fact>
-              <Fact icon="verified" label="Last verified" wide>
+              <Fact icon="verified" label="Last verified">
                 {offer.lastVerifiedAt ? (
                   <>
                     {formatDateTime(offer.lastVerifiedAt)} ({timeAgo(offer.lastVerifiedAt)})
@@ -228,66 +272,22 @@ export default async function OfferPage({ params }) {
                       : null}
               </Fact>
             </dl>
+          </aside>
+        </article>
 
-            {offer.scope === "local" && offer.eligibleLocations?.length > 0 && (
-              <section>
-                <h2 className="mb-2 font-semibold text-slate-900">Participating locations</h2>
-                <ul className="grid gap-2 text-sm sm:grid-cols-2">
-                  {offer.eligibleLocations.map((l, i) => (
-                    <li key={i} className="rounded-xl border border-slate-200/80 bg-white/70 p-3">
-                      <div className="font-medium">{l.name || l.address}</div>
-                      {l.name && l.address && <div className="text-slate-600">{l.address}</div>}
-                      {l.city && <div className="text-slate-500">{l.city}</div>}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {offer.terms && (
-              <section>
-                <h2 className="mb-2 font-semibold text-slate-900">Terms</h2>
-                <p className="whitespace-pre-line rounded-xl border border-slate-200/80 bg-white/70 p-4 text-sm text-slate-700">{offer.terms}</p>
-              </section>
-            )}
-
-            {offer.alternateSources?.length > 0 && (
-              <section>
-                <h2 className="mb-2 font-semibold text-slate-900">Also reported by</h2>
-                <ul className="list-inside list-disc text-sm">
-                  {offer.alternateSources.map((s) => (
-                    <li key={s.url}>
-                      <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-ink hover:underline">
-                        {s.sourceName || new URL(s.url).hostname}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            <p className="text-xs text-slate-500">
-              Summary written from the original source. Terms, availability and participating branches can change; always confirm with the business.
-            </p>
-          </article>
-
-          {related.length > 0 && (
-            <section aria-labelledby="related-title" className="related-panel rounded-3xl border border-brand-100 p-4 sm:p-5 lg:sticky lg:top-24">
-              <div className="mb-5 flex items-start gap-3 border-b border-brand-100 pb-4">
-                <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-700 text-lg text-white shadow-md">
-                  ✨
-                </span>
-                <div>
-                  <h2 id="related-title" className="text-lg font-semibold text-slate-900">You may also like</h2>
-                  <p className="text-sm text-slate-500">
-                    {fromSameSeller ? `More from ${sellerName}, and similar offers` : `More ${categoryLabel(offer.primaryCategory).toLowerCase()} offers`} · drag the card or use the arrows
-                  </p>
-                </div>
-              </div>
-              <RelatedStack offers={related.map(stackFields)} />
-            </section>
-          )}
-        </div>
+        {/* "You may also like": a full-width row with the chosen card big in the centre. */}
+        {related.length > 0 && (
+          <section aria-labelledby="related-title" className="related-panel mt-10 rounded-3xl border border-brand-100 px-0 py-8 sm:py-10">
+            <div className="mb-6 px-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-ink">{fromSameSeller ? `More from ${sellerName}` : "Similar offers"}</p>
+              <h2 id="related-title" className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">You may also like</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {fromSameSeller ? `More from ${sellerName}, and similar offers` : `More ${categoryLabel(offer.primaryCategory).toLowerCase()} offers`} · drag or use the arrows
+              </p>
+            </div>
+            <RelatedCarousel offers={related.map(stackFields)} />
+          </section>
+        )}
       </main>
       {status === "active" && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(offer) }} />}
       <Footer />

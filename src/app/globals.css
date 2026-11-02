@@ -473,9 +473,9 @@ html.dark .offer-aurora {
     radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--brand-accent-light) 14%, transparent), transparent 60%),
     linear-gradient(180deg, var(--brand-50), color-mix(in srgb, var(--brand-50) 40%, var(--surface)));
 }
-.related-stack:focus-visible {
-  outline-offset: 8px;
-  border-radius: 1rem;
+/* The carousel row fades out at both ends, where the side cards trail off. */
+.related-track {
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
 }
 
 /* Panels that open (More filters) slide down a little. */
