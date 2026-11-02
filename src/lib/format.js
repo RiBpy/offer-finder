@@ -38,7 +38,8 @@ export function formatMoney(amount, currency) {
 export function discountLabel(o) {
   switch (o.discountType) {
     case "percent":
-      return o.discountValue != null ? `${o.discountValue}% off` : o.discountText;
+      // Percentages worked out from old and new prices can carry decimals (77.27%).
+      return o.discountValue != null ? `${Math.round(o.discountValue)}% off` : o.discountText;
     case "amount":
       return o.discountValue != null ? `${formatMoney(o.discountValue, o.currency)} off` : o.discountText;
     case "fixed_price":

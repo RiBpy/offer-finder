@@ -23,7 +23,8 @@ export const metadata = {
   alternates: { canonical: "/" },
 };
 
-export const viewport = { themeColor: "#047857" };
+// The browser bar colour: keep it equal to --brand-700 in globals.css.
+export const viewport = { themeColor: "#1b365d" };
 
 export default function RootLayout({ children }) {
   return (

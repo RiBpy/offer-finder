@@ -65,7 +65,7 @@ export default function EditOffer({ params }) {
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <h2 className="mb-2 font-semibold">Public page</h2>
           {o.reviewState === "approved" && !o.mergedInto ? (
-            <Link href={`/offers/${o.slug}`} className="break-all text-emerald-700 underline" target="_blank">/offers/{o.slug}</Link>
+            <Link href={`/offers/${o.slug}`} className="break-all text-brand-ink underline" target="_blank">/offers/{o.slug}</Link>
           ) : (
             <p className="text-slate-500">Not public until approved.</p>
           )}

@@ -163,7 +163,7 @@ export function activeFilterCount(f) {
   );
 }
 
-const select = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600";
+const select = "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-600";
 
 // A filter select with a small × that resets it, shown only while it is set.
 function ClearableSelect({ value, defaultValue = "", onClear, label, className = "", children, ...props }) {
@@ -209,7 +209,7 @@ function Item({ active, onClick, children, count, indent = false }) {
       onClick={onClick}
       // The same weight whether chosen or not: bold text is wider and could wrap, shifting the menu.
       className={`flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${indent ? "pl-4" : ""} ${
-        active ? "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20" : "text-slate-700 hover:bg-slate-100"
+        active ? "bg-brand-50 text-brand-ink-strong ring-1 ring-inset ring-brand-600/20" : "text-slate-700 hover:bg-slate-100"
       } ${count === 0 && !active ? "opacity-50" : ""}`}
     >
       {children}
@@ -226,11 +226,11 @@ function Accordion({ id, icon, label, open, onToggle, active, children }) {
         aria-expanded={open}
         aria-controls={`menu-${id}`}
         onClick={onToggle}
-        className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-slate-100 ${active ? "text-emerald-800" : "text-slate-800"}`}
+        className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-slate-100 ${active ? "text-brand-ink-strong" : "text-slate-800"}`}
       >
         <span aria-hidden="true" className="w-5 text-center text-base">{icon}</span>
         <span className="flex-1">{label}</span>
-        {active && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-600" />}
+        {active && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-brand-600" />}
         <Chevron open={open} />
       </button>
       {open && (
@@ -400,11 +400,11 @@ export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, on
               </ClearableSelect>
             </label>
             <label className="flex items-center gap-3 text-sm text-slate-700">
-              <input type="checkbox" checked={filters.national} onChange={set("national")} className="h-4 w-4 shrink-0 accent-emerald-700" />
+              <input type="checkbox" checked={filters.national} onChange={set("national")} className="h-4 w-4 shrink-0 accent-brand-700" />
               Include nationwide and online-only deals
             </label>
             <label className="flex items-center gap-3 text-sm text-slate-700">
-              <input type="checkbox" checked={filters.unverified} onChange={set("unverified")} className="h-4 w-4 shrink-0 accent-emerald-700" />
+              <input type="checkbox" checked={filters.unverified} onChange={set("unverified")} className="h-4 w-4 shrink-0 accent-brand-700" />
               Also show unverified offers (clearly labelled)
             </label>
           </div>
@@ -434,7 +434,7 @@ export function ActiveFilters({ filters, setFilters }) {
           key={label}
           type="button"
           onClick={() => setFilters((f) => ({ ...f, ...reset }))}
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 py-1.5 pl-3 pr-2 text-sm font-medium text-emerald-800 transition hover:border-emerald-600/60 active:scale-95"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-brand-600/30 bg-brand-50 py-1.5 pl-3 pr-2 text-sm font-medium text-brand-ink-strong transition hover:border-brand-600/60 active:scale-95"
           aria-label={`Remove filter: ${label}`}
         >
           {label}
@@ -442,7 +442,7 @@ export function ActiveFilters({ filters, setFilters }) {
         </button>
       ))}
       {!isDefaultFilters(filters) && (
-        <button type="button" onClick={() => setFilters((f) => ({ ...DEFAULT_FILTERS, q: f.q, radius: f.radius, sort: f.sort }))} className="shrink-0 px-1 text-sm font-medium text-emerald-700 hover:underline">
+        <button type="button" onClick={() => setFilters((f) => ({ ...DEFAULT_FILTERS, q: f.q, radius: f.radius, sort: f.sort }))} className="shrink-0 px-1 text-sm font-medium text-brand-ink hover:underline">
           Clear all
         </button>
       )}
@@ -490,7 +490,7 @@ export function FilterDrawer({ open, onClose, total, children }) {
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain px-2 py-2">{children}</div>
         <div className="border-t border-slate-200 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-          <button type="button" onClick={onClose} className="w-full rounded-full bg-emerald-700 py-3 text-sm font-semibold text-white shadow-md shadow-emerald-700/20 active:scale-[0.98]">
+          <button type="button" onClick={onClose} className="w-full rounded-full bg-brand-700 py-3 text-sm font-semibold text-white shadow-md shadow-brand-700/20 active:scale-[0.98]">
             {total == null ? "Show offers" : `Show ${total} ${total === 1 ? "offer" : "offers"}`}
           </button>
         </div>

@@ -49,7 +49,7 @@ export default function SavedClient() {
       <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
         <p className="font-medium text-slate-800">No saved offers yet.</p>
         <p className="mt-1 text-sm text-slate-500">Tap ☆ on any offer to save it here.</p>
-        <Link href="/" className="mt-4 inline-block font-medium text-emerald-700 hover:underline">Browse offers</Link>
+        <Link href="/" className="mt-4 inline-block font-medium text-brand-ink hover:underline">Browse offers</Link>
       </div>
     );
 

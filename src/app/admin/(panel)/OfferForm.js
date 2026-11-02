@@ -60,7 +60,7 @@ export function offerToForm(o) {
   };
 }
 
-const input = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600";
+const input = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-600";
 
 function Field({ label, error, hint, children, className = "" }) {
   return (
@@ -170,7 +170,7 @@ export default function OfferForm({ initial, offerId }) {
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={f.isBrandOffer} onChange={set("isBrandOffer")} className="h-4 w-4 accent-emerald-700" />
+          <input type="checkbox" checked={f.isBrandOffer} onChange={set("isBrandOffer")} className="h-4 w-4 accent-brand-700" />
           Brand-wide promotion (shows in Brand Offers)
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -193,7 +193,7 @@ export default function OfferForm({ initial, offerId }) {
               <label key={c.id} className="flex items-center gap-1.5 rounded-full border border-slate-200 px-2.5 py-1 text-xs">
                 <input
                   type="checkbox"
-                  className="accent-emerald-700"
+                  className="accent-brand-700"
                   checked={f.categories.includes(c.id)}
                   onChange={(e) =>
                     setF((s) => ({ ...s, categories: e.target.checked ? [...s.categories, c.id] : s.categories.filter((x) => x !== c.id) }))
@@ -342,12 +342,12 @@ export default function OfferForm({ initial, offerId }) {
       </Fieldset>
 
       {message && (
-        <p className={`rounded-lg p-3 text-sm ${Object.keys(errors).length ? "bg-red-50 text-red-800" : "bg-emerald-50 text-emerald-800"}`} role="status">
+        <p className={`rounded-lg p-3 text-sm ${Object.keys(errors).length ? "bg-red-50 text-red-800" : "bg-brand-50 text-brand-ink-strong"}`} role="status">
           {message}
         </p>
       )}
       <div className="flex gap-3">
-        <button disabled={saving} className="rounded-lg bg-emerald-700 px-5 py-2.5 font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">
+        <button disabled={saving} className="rounded-lg bg-brand-700 px-5 py-2.5 font-semibold text-white hover:bg-brand-800 disabled:opacity-60">
           {saving ? "Saving…" : offerId ? "Save changes" : "Create offer"}
         </button>
       </div>

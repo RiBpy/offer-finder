@@ -45,14 +45,14 @@ function Rig({ pct }) {
             <circle cx={cx} cy="49" r="2" className="fill-slate-700" />
           </g>
         ))}
-        <path d="M124 49 140 31 150 49Z M140 31 168 29 150 49 M168 29 176 49 M136 27h9 M168 29l3-7h6" fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M124 49 140 31 150 49Z M140 31 168 29 150 49 M168 29 176 49 M136 27h9 M168 29l3-7h6" fill="none" style={{ stroke: "var(--brand-ink)" }} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         <g className="stroke-slate-800" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
           <path d="M141 26 158 13" />
           <path d="M157 14 172 22" />
           <path className="loader-leg" d="M141 26 153 34 150 49" />
         </g>
         <circle cx="162" cy="7" r="5.5" className="fill-slate-800" />
-        <path d="M156 5.5a6 6 0 0 1 11.5-1" fill="none" stroke="#059669" strokeWidth="3" strokeLinecap="round" />
+        <path d="M156 5.5a6 6 0 0 1 11.5-1" fill="none" style={{ stroke: "var(--brand-ink)" }} strokeWidth="3" strokeLinecap="round" />
       </g>
     </svg>
   );
@@ -110,11 +110,11 @@ export default function PageLoader({ progress = 0, done }) {
       aria-valuenow={Math.round(pct)}
     >
       <div className="page-loader-logo flex items-center gap-3">
-        <svg aria-hidden="true" viewBox="0 0 64 64" className="h-11 w-11 drop-shadow-[0_8px_18px_rgb(5_150_105/0.35)]">
+        <svg aria-hidden="true" viewBox="0 0 64 64" className="brand-glow h-11 w-11">
           <defs>
             <linearGradient id="loader-tile" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#10b981" />
-              <stop offset="1" stopColor="#0d9488" />
+              <stop offset="0" style={{ stopColor: "var(--brand-accent-light)" }} />
+              <stop offset="1" style={{ stopColor: "var(--brand-700)" }} />
             </linearGradient>
           </defs>
           <rect width="64" height="64" rx="16" fill="url(#loader-tile)" />
@@ -123,7 +123,7 @@ export default function PageLoader({ progress = 0, done }) {
           <path d="M44 18 20 46" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" />
         </svg>
         <span className="text-2xl font-semibold tracking-tight text-slate-900">
-          Offer<span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Finder</span>
+          Offer<span className="brand-wordmark">Finder</span>
         </span>
       </div>
 

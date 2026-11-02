@@ -8,7 +8,7 @@ import { useBookmarks } from "./hooks";
 import OfferPicture from "./OfferPicture";
 
 const TONES = {
-  ok: "bg-emerald-50 text-emerald-800",
+  ok: "bg-brand-50 text-brand-ink-strong",
   urgent: "bg-amber-50 text-amber-800",
   info: "bg-sky-50 text-sky-800",
   muted: "bg-slate-100 text-slate-600",
@@ -80,7 +80,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
           <OfferPicture offer={offer} />
         </div>
         {discount && (
-          <span className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-emerald-600 to-teal-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-emerald-900/25 sm:text-[13px]">
+          <span className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-md bg-gradient-to-r from-brand-600 to-brand-accent px-2.5 py-1 text-xs font-extrabold uppercase tracking-tight text-white shadow-lg shadow-brand-900/25 sm:text-[13px]">
             {discount}
           </span>
         )}
@@ -93,7 +93,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
       </div>
 
       <div className="relative flex flex-1 flex-col gap-2 p-3">
-        {seller && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-emerald-700">{seller}</p>}
+        {seller && <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-brand-ink">{seller}</p>}
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 sm:text-[15px]">
           <Link href={`/offers/${offer.slug}`} draggable={false} className="after:absolute after:inset-0 after:z-[1] focus-visible:outline-none">
             {offer.title}
@@ -102,7 +102,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
 
         {offer.originalPrice != null && offer.discountedPrice != null && (
           <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
-            <span className="font-bold text-emerald-700">{formatMoney(offer.discountedPrice, offer.currency)}</span>
+            <span className="font-bold text-brand-ink">{formatMoney(offer.discountedPrice, offer.currency)}</span>
             <span className="text-xs text-slate-400 line-through">{formatMoney(offer.originalPrice, offer.currency)}</span>
           </p>
         )}
@@ -131,7 +131,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
           </div>
           <div className="flex min-w-0 items-center justify-between gap-2 text-slate-500">
             <span className="inline-flex min-w-0 items-center gap-1">
-              <Icon d={CHECK} className="h-3 w-3 text-emerald-600" />
+              <Icon d={CHECK} className="h-3 w-3 text-brand-ink" />
               <span className="truncate">
                 {sourceTypeLabel(offer.sourceType)}
                 {offer.lastVerifiedAt && <> · {timeAgo(offer.lastVerifiedAt)}</>}
@@ -142,7 +142,7 @@ export default function OfferCard({ offer, compact = false, index = 0 }) {
               target="_blank"
               rel="noopener noreferrer nofollow"
               draggable={false}
-              className="relative z-10 shrink-0 rounded-md border border-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-700 transition-colors hover:bg-emerald-600 hover:text-white"
+              className="relative z-10 shrink-0 rounded-md border border-brand-600/30 px-2 py-0.5 font-semibold text-brand-ink transition-colors hover:bg-brand-600 hover:text-white"
             >
               Source ↗
             </a>
