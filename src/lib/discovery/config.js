@@ -80,7 +80,7 @@ const SHOP_SALE_NOTE =
 
 // For a brand's home page, which shows its store-wide sale among single products.
 const HOME_SALE_NOTE =
-  "This is the brand's own page. Return at most ONE offer, only for a sale or discount on the whole store or a whole collection (e.g. 'Flat 20% off all products online'), with its biggest discount and any dates or conditions (e.g. online only). Title it with the brand's name. Do not return offers for single products, gift cards, or rewards for reviews or sign-ups. If nothing on the page says there is a sale, return no offer.";
+  "This is the brand's own page. Return at most ONE offer, only for a sale or discount on the whole store or a whole collection (e.g. 'Flat 20% off all products online'), with its biggest discount and any dates or conditions (e.g. online only). Title it with the brand's name. Do not return offers for single products, gift cards, rewards for reviews or sign-ups, or standing delivery terms (e.g. free delivery over an amount). If nothing on the page says there is a sale, return no offer.";
 
 // Arogga is mainly a pharmacy; only its beauty and personal care sales are wanted.
 const BEAUTY_ONLY_NOTE = `${SHOP_SALE_NOTE} Only consider beauty and personal care products (skincare, haircare, makeup, body care, fragrance, grooming). Ignore medicines, supplements, vitamins, medical devices and baby food, and base the discount only on the beauty products. If the page has no beauty or personal care products on sale, return no offer. Start the title with the sale's own name shown on the page (e.g. 'Beauty Steals: up to 64% off beauty products at Arogga').`;
@@ -252,6 +252,22 @@ export const SITES = [
     name: "Mens World",
     pages: ["https://mensworld.com.bd/"],
     note: `Mens World sells menswear, so set audience to men. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Easy Fashion has no sale list (its "Gift Card & Offers" page is empty); a sale shows on its home page.
+    name: "Easy",
+    pages: ["https://easyfashion.com.bd/"],
+    note: `Easy Fashion sells clothing for men and boys. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Walker Lifestyle's home page lists its discounted shirts, polos and jeans.
+    name: "Walker",
+    pages: ["https://walkerlifestyle.com/"],
+    note: `${SHOP_SALE_NOTE} Title it with Walker Lifestyle. It sells menswear, so set audience to men.`,
     category: "fashion",
     recheckDays: 3,
   },
