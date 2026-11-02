@@ -424,11 +424,11 @@ html.dark .offer-placeholder .bg-white\/70 {
 }
 
 /* Offer page. A soft "aurora" of brand-coloured light behind the top of the
-   page; the picture in a frame with a brand glow under it; the headline card
-   in a brand gradient lit from its top corner; a glowing call-to-action. */
+   page; the hero (picture and headline in one card) with a brand glow under
+   it; the headline in a brand gradient lit from its top corner. */
 .offer-aurora {
   position: absolute;
-  inset: -2rem -2rem auto;
+  inset: -2rem 0 auto;
   height: 34rem;
   z-index: -1;
   pointer-events: none;
@@ -437,19 +437,23 @@ html.dark .offer-placeholder .bg-white\/70 {
     radial-gradient(34% 50% at 88% 6%, color-mix(in srgb, var(--brand-accent-light) 28%, transparent), transparent 70%),
     radial-gradient(30% 40% at 55% 55%, color-mix(in srgb, var(--brand-200) 40%, transparent), transparent 70%);
   filter: blur(24px);
-  mask-image: linear-gradient(#000 55%, transparent);
+  /* Fades out downwards and towards both sides, so it never shows an edge
+     (it stays within the content area, which clips anything wider). */
+  mask-image:
+    linear-gradient(#000 55%, transparent),
+    linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-composite: intersect;
 }
 html.dark .offer-aurora {
   opacity: 0.55;
 }
-.offer-frame {
-  box-shadow: 0 24px 48px -28px color-mix(in srgb, var(--brand-700) 55%, transparent);
+.offer-hero {
+  box-shadow: 0 30px 60px -32px color-mix(in srgb, var(--brand-700) 65%, transparent);
 }
 .offer-headline {
   background:
     radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.28), transparent 50%),
     linear-gradient(135deg, var(--brand-700), var(--brand-accent));
-  box-shadow: 0 24px 48px -24px color-mix(in srgb, var(--brand-700) 70%, transparent);
 }
 .offer-headline::before {
   /* A faint ring of light in its top corner. */
@@ -462,14 +466,6 @@ html.dark .offer-aurora {
   border-radius: 9999px;
   border: 1.5rem solid rgb(255 255 255 / 0.08);
   pointer-events: none;
-}
-.offer-cta {
-  background: linear-gradient(135deg, var(--brand-700), var(--brand-accent));
-  box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--brand-700) 70%, transparent);
-}
-.offer-cta:hover {
-  box-shadow: 0 16px 30px -10px color-mix(in srgb, var(--brand-700) 85%, transparent);
-  filter: brightness(1.08);
 }
 /* "You may also like" sits in its own tinted panel, so it reads as a separate section. */
 .related-panel {

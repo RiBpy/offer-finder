@@ -134,62 +134,63 @@ export default async function OfferPage({ params }) {
           </div>
         )}
 
-        {/* Large screens: picture and "You may also like" on the left, details on the right.
-            Phones: picture, details, then "You may also like". */}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
-          {/* Left column: the picture on its own, then "You may also like" as a separate,
-              tinted section. The details sit in a white panel on the right. On phones the
-              left column's parts fall into the page order around the details. */}
-          <div className="contents lg:col-start-1 lg:row-start-1 lg:block lg:space-y-8">
-            <div className="offer-frame relative order-1 aspect-[16/9] overflow-hidden rounded-3xl">
-              <OfferPicture
-                offer={{ imageUrl: offer.imageUrl, businessName: offer.businessName, brandName: offer.brandName, sourceName: offer.sourceName, primaryCategory: offer.primaryCategory }}
-                variant="hero"
-              />
-            </div>
-
-            {related.length > 0 && (
-              <section aria-labelledby="related-title" className="related-panel order-3 rounded-3xl border border-brand-100 p-4 sm:p-5">
-                <div className="mb-5 flex items-start gap-3 border-b border-brand-100 pb-4">
-                  <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-700 text-lg text-white shadow-md">
-                    ✨
-                  </span>
-                  <div>
-                    <h2 id="related-title" className="text-lg font-semibold text-slate-900">You may also like</h2>
-                    <p className="text-sm text-slate-500">
-                      {fromSameSeller ? `More from ${sellerName}, and similar offers` : `More ${categoryLabel(offer.primaryCategory).toLowerCase()} offers`} · drag the card or use the arrows
-                    </p>
-                  </div>
-                </div>
-                <RelatedStack offers={related.map(stackFields)} />
-              </section>
-            )}
+        {/* Hero: the picture and the offer's headline in one card. */}
+        <section className="offer-hero grid overflow-hidden rounded-3xl lg:grid-cols-2">
+          <div className="relative aspect-[16/9] lg:aspect-auto lg:min-h-[340px]">
+            <OfferPicture
+              offer={{ imageUrl: offer.imageUrl, businessName: offer.businessName, brandName: offer.brandName, sourceName: offer.sourceName, primaryCategory: offer.primaryCategory }}
+              variant="hero"
+            />
           </div>
-
-          <article className="order-2 space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5 lg:col-start-2 lg:row-start-1">
-            <header className="offer-headline relative overflow-hidden rounded-3xl p-5 text-white sm:p-6">
-              <div className="relative flex items-start justify-between gap-4">
-                <div className="min-w-0 space-y-3">
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="rounded-full bg-white/15 px-2.5 py-1 font-medium ring-1 ring-white/25 ring-inset">
-                      {category?.icon && <span aria-hidden="true">{category.icon} </span>}
-                      {categoryLabel(offer.primaryCategory)}
-                    </span>
-                    {offer.isBrandOffer && <span className="rounded-full bg-white/15 px-2.5 py-1 font-medium ring-1 ring-white/25 ring-inset">Brand offer</span>}
-                    <span className="rounded-full bg-white/15 px-2.5 py-1 ring-1 ring-white/25 ring-inset">{AVAILABILITY_LABELS[offer.availabilityType]}</span>
-                  </div>
-                  <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{offer.title}</h1>
-                  {seller && <p className="text-sm font-medium text-white/80">{seller}</p>}
+          <header className="offer-headline relative flex flex-col justify-center gap-4 overflow-hidden p-5 text-white sm:p-7">
+            <div className="relative flex items-start justify-between gap-4">
+              <div className="min-w-0 space-y-3">
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  <span className="rounded-full bg-white/15 px-2.5 py-1 font-medium ring-1 ring-white/25 ring-inset">
+                    {category?.icon && <span aria-hidden="true">{category.icon} </span>}
+                    {categoryLabel(offer.primaryCategory)}
+                  </span>
+                  {offer.isBrandOffer && <span className="rounded-full bg-white/15 px-2.5 py-1 font-medium ring-1 ring-white/25 ring-inset">Brand offer</span>}
+                  <span className="rounded-full bg-white/15 px-2.5 py-1 ring-1 ring-white/25 ring-inset">{AVAILABILITY_LABELS[offer.availabilityType]}</span>
                 </div>
-                <BookmarkButton id={offer.id} title={offer.title} className="border-white/30! bg-white/15! text-white! backdrop-blur" />
+                <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{offer.title}</h1>
+                {seller && <p className="text-sm font-medium text-white/80">{seller}</p>}
               </div>
+              <BookmarkButton id={offer.id} title={offer.title} className="border-white/30! bg-white/15! text-white! backdrop-blur" />
+            </div>
+            <div className="relative flex flex-wrap items-center gap-3">
               {discount && (
-                <p className="relative mt-5 inline-flex items-baseline gap-2 rounded-2xl bg-white px-4 py-2 text-2xl font-extrabold uppercase tracking-tight text-brand-ink shadow-lg shadow-black/10">
-                  {discount}
+                <p className="rounded-2xl bg-white px-4 py-2 text-2xl font-extrabold uppercase tracking-tight text-brand-ink shadow-lg shadow-black/10">{discount}</p>
+              )}
+              {offer.originalPrice != null && offer.discountedPrice != null && (
+                <p className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="text-2xl font-bold">{formatMoney(offer.discountedPrice, offer.currency)}</span>
+                  <span className="text-white/60 line-through">{formatMoney(offer.originalPrice, offer.currency)}</span>
                 </p>
               )}
-            </header>
+            </div>
+            <a
+              href={offer.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="relative inline-flex w-fit items-center gap-2 rounded-xl bg-white/15 px-5 py-3 font-semibold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/25 active:scale-95"
+            >
+              View original offer ↗
+            </a>
+          </header>
+        </section>
 
+        {/* Below: the details on the left, "You may also like" on the right (it stays in
+            view while the details scroll on large screens). Phones: details, then the stack. */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] lg:items-start lg:gap-8">
+          <article className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-6">
+            {offer.description && (
+              <section>
+                <h2 className="mb-2 font-semibold text-slate-900">About this offer</h2>
+                <div className="whitespace-pre-line leading-relaxed text-slate-700">{offer.description}</div>
+              </section>
+            )}
+            {offer.originalPrice != null && offer.discountedPrice != null && <p className="text-xs text-slate-500">Prices as stated by the source.</p>}
             {offer.tags?.length > 0 && (
               <div className="flex flex-wrap gap-1.5 text-xs">
                 {offer.tags.map((t) => (
@@ -197,24 +198,6 @@ export default async function OfferPage({ params }) {
                 ))}
               </div>
             )}
-
-            {offer.originalPrice != null && offer.discountedPrice != null && (
-              <p className="flex flex-wrap items-baseline gap-x-3">
-                <span className="text-2xl font-bold text-brand-ink">{formatMoney(offer.discountedPrice, offer.currency)}</span>
-                <span className="text-slate-400 line-through">{formatMoney(offer.originalPrice, offer.currency)}</span>
-                <span className="text-xs text-slate-500">(prices as stated by the source)</span>
-              </p>
-            )}
-            {offer.description && <div className="whitespace-pre-line leading-relaxed text-slate-700">{offer.description}</div>}
-
-            <a
-              href={offer.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="offer-cta inline-flex items-center gap-2 rounded-xl px-5 py-3 font-semibold text-white transition active:scale-95"
-            >
-              View original offer ↗
-            </a>
 
             <dl className="grid gap-2 sm:grid-cols-2">
               <Fact icon="status" label="Status">{STATUS_LABELS[status]}</Fact>
@@ -287,6 +270,23 @@ export default async function OfferPage({ params }) {
               Summary written from the original source. Terms, availability and participating branches can change; always confirm with the business.
             </p>
           </article>
+
+          {related.length > 0 && (
+            <section aria-labelledby="related-title" className="related-panel rounded-3xl border border-brand-100 p-4 sm:p-5 lg:sticky lg:top-24">
+              <div className="mb-5 flex items-start gap-3 border-b border-brand-100 pb-4">
+                <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-700 text-lg text-white shadow-md">
+                  ✨
+                </span>
+                <div>
+                  <h2 id="related-title" className="text-lg font-semibold text-slate-900">You may also like</h2>
+                  <p className="text-sm text-slate-500">
+                    {fromSameSeller ? `More from ${sellerName}, and similar offers` : `More ${categoryLabel(offer.primaryCategory).toLowerCase()} offers`} · drag the card or use the arrows
+                  </p>
+                </div>
+              </div>
+              <RelatedStack offers={related.map(stackFields)} />
+            </section>
+          )}
         </div>
       </main>
       {status === "active" && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(offer) }} />}

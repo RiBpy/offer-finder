@@ -61,7 +61,8 @@ export default function OfferPicture({ offer, variant = "card", className = "" }
   if (!offer.imageUrl || failed) return <OfferPlaceholder offer={offer} large={variant === "hero"} />;
 
   // Source images are external; plain lazy imgs avoid proxying them through our server.
-  const img = { src: offer.imageUrl, alt: "", loading: "lazy", decoding: "async", referrerPolicy: "no-referrer", draggable: false };
+  // The offer page's picture is at the top of the page, so it loads straight away.
+  const img = { src: offer.imageUrl, alt: "", loading: variant === "hero" ? "eager" : "lazy", decoding: "async", referrerPolicy: "no-referrer", draggable: false };
   return (
     <div className={`absolute inset-0 bg-[#fff] ${className}`}>
       {variant === "card" && !logo && <img {...img} aria-hidden="true" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-xl" />}
