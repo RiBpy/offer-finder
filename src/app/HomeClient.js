@@ -19,6 +19,7 @@ import { Logo, BottomNav } from "@/components/SiteChrome";
 import ThemeToggle from "@/components/ThemeToggle";
 import HeaderShell from "@/components/HeaderShell";
 import PageLoader from "@/components/PageLoader";
+import SavedLink from "@/components/SavedLink";
 import { useDragScroll, useStoredState, useToday } from "@/components/hooks";
 import { rememberList, rememberedList, takeScrollRestore } from "@/lib/return-to";
 
@@ -348,6 +349,7 @@ export default function HomeClient() {
                 className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-600 focus:bg-white focus:ring-2 focus:ring-brand-100"
               />
             </form>
+            <SavedLink />
             <ThemeToggle />
           </div>
         </div>

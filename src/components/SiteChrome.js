@@ -2,6 +2,7 @@ import Link from "next/link";
 import HeaderShell from "./HeaderShell";
 import { OffersLink } from "./ReturnLink";
 import RibpyLogo from "./RibpyLogo";
+import SavedLink from "./SavedLink";
 import ThemeToggle from "./ThemeToggle";
 
 export function Logo() {
@@ -22,15 +23,15 @@ export function Logo() {
 
 const navLink = "rounded-full px-3 py-1.5 transition-colors hover:bg-slate-100 hover:text-slate-900";
 
-export function SimpleHeader() {
+export function SimpleHeader({ active }) {
   return (
     <HeaderShell>
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
-        <nav className="flex items-center gap-1 text-sm font-medium text-slate-600">
+        <nav className="flex items-center gap-2 text-sm font-medium text-slate-600">
           <OffersLink className={navLink}>Offers</OffersLink>
-          <Link href="/saved" className={navLink}>Saved</Link>
-          <ThemeToggle className="ml-2" />
+          <SavedLink active={active === "saved"} />
+          <ThemeToggle />
         </nav>
       </div>
     </HeaderShell>
