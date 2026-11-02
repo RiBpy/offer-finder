@@ -46,7 +46,7 @@ html.dark {
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-main);
   --font-mono: var(--font-geist-mono);
   /* Tailwind classes such as bg-brand-700 and text-brand-ink read the brand variables above. */
   --color-brand-50: var(--brand-50);
@@ -151,7 +151,7 @@ html.dark .bg-white\/70 {
 body {
   background: var(--page);
   color: var(--ink);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-main), system-ui, sans-serif; /* Oswald, set in layout.js */
 }
 
 /* Colours glide instead of snapping while the theme is switched. */
