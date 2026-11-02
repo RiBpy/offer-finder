@@ -322,9 +322,6 @@ export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, on
 
       <SectionLabel>Brands &amp; banks</SectionLabel>
       <Accordion id="brands" icon="🏷️" label="Brands" open={open.has("brands")} onToggle={() => toggle("brands")} active={filters.brandOnly || Boolean(filters.store)}>
-        <Item indent active={filters.brandOnly && !filters.store} count={counts?.brand} onClick={() => pick({ brandOnly: true }, filters.brandOnly && !filters.store)}>
-          All brand offers
-        </Item>
         {STORES.map((s) => (
           <Item key={s.id} indent active={filters.store === s.id} count={counts?.stores?.[s.id]} onClick={() => pick({ store: s.id }, filters.store === s.id)}>
             {s.label}
