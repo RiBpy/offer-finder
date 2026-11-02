@@ -1,13 +1,69 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   BRAND COLOURS: the site has two, one per theme. Change them here, and only
+   here; everything brand-coloured follows (buttons, badges, links, discount
+   tags, hover and focus states, header and footer accents, logo, loader,
+   picture placeholder). Two files can't read CSS and keep their own copy of
+   the light-mode colour: src/app/icon.svg (favicon) and themeColor in
+   src/app/layout.js.
+   ========================================================================= */
+:root {
+  --brand-light-mode: #1b365d; /* navy */
+  --brand-dark-mode: #059669; /* green */
+}
+
+/* Everything below is worked out from the two colours above: no need to edit it.
+   --brand is the current theme's colour. --brand-700 is the brand itself;
+   lower numbers are paler tints (backgrounds, hovers), higher ones deeper
+   shades; --brand-accent is the lighter end of gradients; --brand-ink is
+   brand-coloured text, which turns light in the dark theme to stay readable. */
+:root {
+  --brand: var(--brand-light-mode);
+  --brand-tint-base: #fff; /* what pale tints are mixed into */
+  --brand-50: color-mix(in srgb, var(--brand) 7%, var(--brand-tint-base));
+  --brand-100: color-mix(in srgb, var(--brand) 15%, var(--brand-tint-base));
+  --brand-200: color-mix(in srgb, var(--brand) 30%, var(--brand-tint-base));
+  --brand-300: color-mix(in srgb, var(--brand) 48%, var(--brand-tint-base));
+  --brand-400: color-mix(in srgb, var(--brand) 66%, var(--brand-tint-base));
+  --brand-500: color-mix(in srgb, var(--brand) 82%, #fff);
+  --brand-600: color-mix(in srgb, var(--brand) 92%, #fff);
+  --brand-700: var(--brand);
+  --brand-800: color-mix(in srgb, var(--brand) 82%, #000);
+  --brand-900: color-mix(in srgb, var(--brand) 65%, #000);
+  --brand-accent: color-mix(in srgb, var(--brand) 78%, #fff);
+  --brand-accent-light: color-mix(in srgb, var(--brand) 62%, #fff);
+  --brand-ink: var(--brand-700);
+  --brand-ink-strong: var(--brand-800);
+  --brand-ink-accent: var(--brand-accent-light);
+}
+html.dark {
+  --brand: var(--brand-dark-mode);
+  --brand-tint-base: #0b1220; /* pale tints become deep ones on the dark page */
+  --brand-ink: color-mix(in srgb, var(--brand) 55%, #fff);
+  --brand-ink-strong: color-mix(in srgb, var(--brand) 35%, #fff);
+  --brand-ink-accent: color-mix(in srgb, var(--brand) 35%, #fff);
+}
+
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-brand-50: #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-600: #059669;
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
+  /* Tailwind classes such as bg-brand-700 and text-brand-ink read the brand variables above. */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-light: var(--brand-accent-light);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-ink-strong: var(--brand-ink-strong);
+  --color-brand-ink-accent: var(--brand-ink-accent);
 }
 
 /* `dark:` utilities follow the class that ThemeToggle puts on <html>, not the OS setting. */
@@ -39,9 +95,6 @@ html.dark {
   --color-slate-800: #e2e8f0;
   --color-slate-900: #f1f5f9;
 
-  --color-emerald-50: #0f2a22;
-  --color-emerald-100: #134e3a;
-
   --color-red-50: #2a1215;
   --color-red-100: #3b1519;
   --color-red-200: #5c1d24;
@@ -64,8 +117,8 @@ html.dark {
   --color-violet-800: #c4b5fd;
 }
 
-/* White surfaces and green text can't be remapped through variables: the same
-   white is used for text on green buttons, and the same green for those buttons. */
+/* White surfaces can't be remapped through variables: the same white is used
+   for text on brand-coloured buttons. */
 html.dark .bg-white,
 html.dark .focus\:bg-white:focus {
   background-color: var(--surface);
@@ -82,13 +135,17 @@ html.dark .bg-white\/95 {
 html.dark .bg-white\/70 {
   background-color: rgb(18 27 45 / 0.7);
 }
-html.dark .text-emerald-700,
-html.dark .text-emerald-800,
-html.dark .text-emerald-800\/70 {
-  color: #6ee7b7;
+
+/* The soft glow under the logo tile, and the brand gradient in the
+   "OfferFinder" wordmark (lighter in the dark theme so it stays readable). */
+.brand-glow {
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--brand-600) 35%, transparent));
 }
-html.dark .text-emerald-900 {
-  color: #a7f3d0;
+.brand-wordmark {
+  background-image: linear-gradient(90deg, var(--brand-ink), var(--brand-ink-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 body {
@@ -109,7 +166,7 @@ html.theme-switching * {
 /* Large screens: a sideways row fades out at its right edge, where it scrolls on. */
 @media (min-width: 1024px) {
   .row-fade {
-    mask-image: linear-gradient(90deg, #000 calc(100% - 48px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 16px), rgb(0 0 0 / 0.35));
   }
 }
 
@@ -130,7 +187,7 @@ html {
 }
 
 :focus-visible {
-  outline: 2px solid #059669;
+  outline: 2px solid var(--brand-600);
   outline-offset: 2px;
 }
 
@@ -146,14 +203,14 @@ html {
 }
 .skeleton {
   background-color: #e8edf3;
-  background-image: linear-gradient(100deg, #e8edf3 30%, #f6f9fc 45%, #ecfdf5 50%, #f6f9fc 55%, #e8edf3 70%);
+  background-image: linear-gradient(100deg, #e8edf3 30%, #f6f9fc 45%, var(--brand-50) 50%, #f6f9fc 55%, #e8edf3 70%);
   background-size: 200% 100%;
   background-attachment: fixed;
   animation: skeleton-sweep 1.6s linear infinite;
 }
 html.dark .skeleton {
   background-color: #1a2436;
-  background-image: linear-gradient(100deg, #1a2436 30%, #233049 45%, #173a31 50%, #233049 55%, #1a2436 70%);
+  background-image: linear-gradient(100deg, #1a2436 30%, #233049 45%, var(--brand-100) 50%, #233049 55%, #1a2436 70%);
 }
 
 /* Placeholder cards rise in one after another (set --i on each). */
@@ -181,7 +238,7 @@ html.dark .skeleton {
   justify-content: center;
   gap: 1.25rem;
   background:
-    radial-gradient(circle at 50% 46%, rgb(16 185 129 / 0.1), transparent 34%),
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--brand-500) 10%, transparent), transparent 34%),
     var(--page);
   /* Leaving: the logo and track drift up and fade first, then the whole
      screen dissolves slowly into the page beneath. */
@@ -194,7 +251,7 @@ html.dark .skeleton {
 }
 html.dark .page-loader {
   background:
-    radial-gradient(circle at 50% 46%, rgb(16 185 129 / 0.14), transparent 34%),
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--brand-400) 16%, transparent), transparent 34%),
     var(--page);
 }
 .page-loader.is-done {
@@ -239,7 +296,7 @@ html.dark .page-loader {
   height: 2px;
   width: calc((100% - 200px) * var(--p) + 24px);
   border-radius: 9999px;
-  background: linear-gradient(90deg, rgb(16 185 129 / 0.2), #10b981 60%, #0d9488);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--brand-accent-light) 20%, transparent), var(--brand-accent-light) 60%, var(--brand-700));
 }
 .loader-rig {
   position: absolute;
@@ -332,19 +389,35 @@ html.dark .offer-card:hover {
   box-shadow: 0 16px 32px -12px rgb(0 0 0 / 0.65);
 }
 
-/* Stand-in for a missing offer picture: a soft emerald wash with a faint
-   pattern of our % mark behind the logo, name and category. */
+/* Stand-in for a missing offer picture: a soft brand-tinted wash with a faint
+   pattern of our % mark behind the logo, name and category. The pattern is a
+   mask filled with the brand colour (an inline SVG image cannot read CSS). */
 .offer-placeholder {
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23059669' stroke-opacity='0.09' stroke-width='2'%3E%3Ccircle cx='15' cy='15' r='3'/%3E%3Ccircle cx='27' cy='27' r='3'/%3E%3Cpath d='M28 14 14 28' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E"),
     radial-gradient(circle at 50% 40%, rgb(255 255 255 / 0.9), transparent 60%),
-    linear-gradient(135deg, #ecfdf5, #f0fdfa 50%, #e2e8f0);
+    linear-gradient(135deg, var(--brand-50), #f1f5f9 50%, #e2e8f0);
+}
+.offer-placeholder::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--brand-600);
+  opacity: 0.1;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%23000' stroke-width='2'%3E%3Ccircle cx='15' cy='15' r='3'/%3E%3Ccircle cx='27' cy='27' r='3'/%3E%3Cpath d='M28 14 14 28' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E");
+  mask-size: 44px 44px;
+}
+.offer-placeholder > * {
+  position: relative;
 }
 html.dark .offer-placeholder {
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44'%3E%3Cg fill='none' stroke='%2334d399' stroke-opacity='0.08' stroke-width='2'%3E%3Ccircle cx='15' cy='15' r='3'/%3E%3Ccircle cx='27' cy='27' r='3'/%3E%3Cpath d='M28 14 14 28' stroke-linecap='round'/%3E%3C/g%3E%3C/svg%3E"),
-    radial-gradient(circle at 50% 40%, rgb(16 185 129 / 0.14), transparent 60%),
-    linear-gradient(135deg, #0f2a22, #10302c 50%, #121b2d);
+    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--brand-400) 18%, transparent), transparent 60%),
+    linear-gradient(135deg, var(--brand-50), var(--brand-100) 50%, #121b2d);
+}
+html.dark .offer-placeholder::before {
+  background-color: var(--brand-300);
+  opacity: 0.08;
 }
 html.dark .offer-placeholder .bg-white\/70 {
   background-color: rgb(11 18 32 / 0.6);
@@ -441,7 +514,7 @@ html.dark .offer-placeholder .bg-white\/70 {
 }
 .back-to-top.is-visible:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 24px -6px rgb(5 150 105 / 0.55);
+  box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--brand-600) 55%, transparent);
 }
 .back-to-top.is-visible:active {
   transform: scale(0.9);

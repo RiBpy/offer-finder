@@ -72,7 +72,7 @@ export default async function OfferPage({ params }) {
       <SimpleHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 pb-24 sm:pb-10">
         <nav className="mb-4 text-sm">
-          <BackToListLink className="text-emerald-700 hover:underline" />
+          <BackToListLink className="text-brand-ink hover:underline" />
         </nav>
 
         {status !== "active" && (
@@ -111,7 +111,7 @@ export default async function OfferPage({ params }) {
               </div>
               <BookmarkButton id={offer.id} title={offer.title} />
             </div>
-            {discount && <p className="inline-block rounded-lg bg-emerald-700 px-3 py-1.5 text-lg font-semibold text-white">{discount}</p>}
+            {discount && <p className="inline-block rounded-lg bg-brand-700 px-3 py-1.5 text-lg font-semibold text-white">{discount}</p>}
             {offer.originalPrice != null && offer.discountedPrice != null && (
               <p>
                 <span className="mr-2 text-slate-400 line-through">{formatMoney(offer.originalPrice, offer.currency)}</span>
@@ -188,7 +188,7 @@ export default async function OfferPage({ params }) {
                 <ul className="list-inside list-disc text-sm">
                   {offer.alternateSources.map((s) => (
                     <li key={s.url}>
-                      <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="text-emerald-700 hover:underline">
+                      <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-ink hover:underline">
                         {s.sourceName || new URL(s.url).hostname}
                       </a>
                     </li>

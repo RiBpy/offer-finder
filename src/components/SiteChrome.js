@@ -9,12 +9,12 @@ export function Logo() {
     <Link href="/" className="group flex shrink-0 items-center gap-2.5 font-semibold">
       <span
         aria-hidden="true"
-        className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-lg font-bold text-white shadow-md shadow-emerald-600/30 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
+        className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-accent text-lg font-bold text-white shadow-md shadow-brand-600/30 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110"
       >
         %
       </span>
       <span className="text-lg tracking-tight text-slate-900">
-        Offer<span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">Finder</span>
+        Offer<span className="brand-wordmark">Finder</span>
       </span>
     </Link>
   );
@@ -38,7 +38,7 @@ export function SimpleHeader() {
 }
 
 export function BottomNav({ active }) {
-  const item = (on) => `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${on ? "text-emerald-700" : "text-slate-500"}`;
+  const item = (on) => `flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${on ? "text-brand-ink" : "text-slate-500"}`;
   return (
     <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] sm:hidden">
       <OffersLink className={item(active === "home")}>
@@ -60,11 +60,11 @@ export function Footer() {
   return (
     <footer className="relative mt-16 overflow-hidden pb-20 sm:pb-0">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-16 top-2 h-40 w-72 rounded-full bg-emerald-400/25 blur-3xl" />
+        <div className="absolute -left-16 top-2 h-40 w-72 rounded-full bg-brand-400/25 blur-3xl" />
         <div className="absolute right-0 top-10 h-40 w-80 rounded-full bg-sky-400/20 blur-3xl" />
       </div>
       <div className="relative border-t border-slate-200 bg-white/60 backdrop-blur-xl">
-        <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-500" />
+        <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-brand-500 via-brand-accent-light to-sky-500" />
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 text-sm text-slate-500">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Logo />

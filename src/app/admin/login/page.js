@@ -42,7 +42,7 @@ export default function AdminLogin() {
           <span className="mb-1 block font-medium">Password</span>
           <input name="password" type="password" required autoComplete="current-password" className="w-full rounded-lg border border-slate-300 px-3 py-2" />
         </label>
-        <button disabled={busy} className="w-full rounded-lg bg-emerald-700 py-2.5 font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">
+        <button disabled={busy} className="w-full rounded-lg bg-brand-700 py-2.5 font-semibold text-white hover:bg-brand-800 disabled:opacity-60">
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>

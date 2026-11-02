@@ -56,7 +56,7 @@ export default function Sources() {
           {running ? "Running…" : "Run revalidation now"}
         </button>
       </div>
-      {notice && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">{notice}</p>}
+      {notice && <p className="rounded-lg bg-brand-50 p-3 text-sm text-brand-ink-strong">{notice}</p>}
       {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
       <p className="text-sm text-slate-600">
         Last scheduled batch:{" "}
@@ -106,7 +106,7 @@ export default function Sources() {
                   <td className="px-3 py-2 font-medium">{s.host}</td>
                   <td className="px-3 py-2 text-xs">{s.lastFetchedAt ? timeAgo(s.lastFetchedAt) : "—"}</td>
                   <td className="px-3 py-2 text-xs">
-                    {s.lastOk ? <span className="text-emerald-700">OK {s.lastStatus}</span> : <span className="text-red-700">{s.lastError || `HTTP ${s.lastStatus}`}</span>}
+                    {s.lastOk ? <span className="text-brand-ink">OK {s.lastStatus}</span> : <span className="text-red-700">{s.lastError || `HTTP ${s.lastStatus}`}</span>}
                     {s.consecutiveFailures > 2 && <span className="ml-2 rounded bg-red-100 px-1.5 text-red-800">{s.consecutiveFailures} failures in a row</span>}
                   </td>
                   <td className="px-3 py-2 text-xs">{s.successCount || 0} / {s.failureCount || 0}</td>

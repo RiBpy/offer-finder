@@ -9,11 +9,11 @@ const LOGO_ASPECT = 2.6;
 function LogoMark({ className }) {
   const id = useId();
   return (
-    <svg aria-hidden="true" viewBox="0 0 64 64" className={`drop-shadow-[0_6px_14px_rgb(5_150_105/0.3)] ${className}`}>
+    <svg aria-hidden="true" viewBox="0 0 64 64" className={`brand-glow ${className}`}>
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#10b981" />
-          <stop offset="1" stopColor="#0d9488" />
+          <stop offset="0" style={{ stopColor: "var(--brand-accent-light)" }} />
+          <stop offset="1" style={{ stopColor: "var(--brand-700)" }} />
         </linearGradient>
       </defs>
       <rect width="64" height="64" rx="16" fill={`url(#${id})`} />
@@ -40,7 +40,7 @@ export function OfferPlaceholder({ offer, large = false }) {
       <LogoMark className={large ? "h-16 w-16" : "h-10 w-10"} />
       {name && <p className={`max-w-full truncate font-bold tracking-tight text-slate-800 ${large ? "text-2xl" : "text-sm"}`}>{name}</p>}
       {category && (
-        <p className={`inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 font-medium text-emerald-800 ${large ? "text-sm" : "text-[11px]"}`}>
+        <p className={`inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 font-medium text-brand-ink-strong ${large ? "text-sm" : "text-[11px]"}`}>
           <span aria-hidden="true">{category.icon}</span>
           {category.label}
         </p>

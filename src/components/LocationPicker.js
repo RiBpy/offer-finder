@@ -151,7 +151,7 @@ function GoogleSearch({ onSelect, bias }) {
           if (e.key === "Enter" && items[active >= 0 ? active : 0]) choose(items[active >= 0 ? active : 0]), e.preventDefault();
         }}
         placeholder="e.g. Gulshan 2, Dhaka"
-        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
       />
       {busy && <p className="mt-2 text-sm text-slate-500">Loading place…</p>}
       {error && <p className="mt-2 text-sm text-red-700">{error}</p>}
@@ -165,7 +165,7 @@ function GoogleSearch({ onSelect, bias }) {
               aria-selected={i === active}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => choose(it)}
-              className={`cursor-pointer px-4 py-2.5 ${i === active ? "bg-emerald-50" : "hover:bg-slate-50"}`}
+              className={`cursor-pointer px-4 py-2.5 ${i === active ? "bg-brand-50" : "hover:bg-slate-50"}`}
             >
               <div className="font-medium text-slate-900">{it.main}</div>
               {it.secondary && <div className="text-sm text-slate-500">{it.secondary}</div>}
@@ -200,7 +200,7 @@ function ManualForm({ onSelect, initial }) {
           value={city}
           onChange={(e) => setCity(e.target.value)}
           placeholder="e.g. Dhaka"
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
         />
       </div>
       <div>
@@ -210,7 +210,7 @@ function ManualForm({ onSelect, initial }) {
           required
           value={country}
           onChange={(e) => setCountry(e.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-emerald-600"
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-brand-600"
         >
           <option value="">Choose a country</option>
           {countries.map((c) => (
@@ -218,7 +218,7 @@ function ManualForm({ onSelect, initial }) {
           ))}
         </select>
       </div>
-      <button type="submit" className="w-full rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white hover:bg-emerald-800">
+      <button type="submit" className="w-full rounded-xl bg-brand-700 px-4 py-3 font-semibold text-white hover:bg-brand-800">
         Use this city
       </button>
       <p className="text-xs text-slate-500">
@@ -288,7 +288,7 @@ export default function LocationPicker({ open, onClose, onSelect, current, messa
             type="button"
             onClick={useMyLocation}
             disabled={locating}
-            className="w-full rounded-xl border border-emerald-700 bg-white px-4 py-3 font-semibold text-emerald-800 hover:bg-emerald-50 disabled:opacity-60"
+            className="w-full rounded-xl border border-brand-700 bg-white px-4 py-3 font-semibold text-brand-ink-strong hover:bg-brand-50 disabled:opacity-60"
           >
             {locating ? "Finding your location…" : "📍 Use my current location"}
           </button>

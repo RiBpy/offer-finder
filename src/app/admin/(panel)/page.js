@@ -57,7 +57,7 @@ export default function AdminOffers() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Offers</h1>
-        <Link href="/admin/offers/new" className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
+        <Link href="/admin/offers/new" className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
           + Add offer from URL
         </Link>
       </div>
@@ -113,7 +113,7 @@ export default function AdminOffers() {
                   <div className="text-xs text-slate-500">
                     {[o.brandName || o.businessName, categoryLabel(o.primaryCategory)].filter(Boolean).join(" · ")}
                   </div>
-                  <a href={o.sourceUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-xs text-emerald-700 hover:underline">
+                  <a href={o.sourceUrl} target="_blank" rel="noopener noreferrer" className="block truncate text-xs text-brand-ink hover:underline">
                     {o.sourceUrl}
                   </a>
                   {o.statusReason && <div className="mt-1 text-xs text-amber-800">{o.statusReason}</div>}
@@ -132,7 +132,7 @@ export default function AdminOffers() {
                 <td className="px-3 py-2.5">
                   <div className="flex flex-wrap justify-end gap-1">
                     {o.reviewState !== "approved" && !o.mergedInto && (
-                      <button disabled={busyId === o._id} onClick={() => act(o._id, "approve")} className="rounded border border-emerald-600 px-2 py-1 text-xs text-emerald-800">
+                      <button disabled={busyId === o._id} onClick={() => act(o._id, "approve")} className="rounded border border-brand-600 px-2 py-1 text-xs text-brand-ink-strong">
                         Approve
                       </button>
                     )}

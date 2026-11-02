@@ -30,28 +30,30 @@ export const AUDIENCE_IDS = AUDIENCES.map((a) => a.id);
 // Brands and shops with their own source (discovery/config.js), for the Brands
 // filter. `sourceName` matches the site name there; `names` also takes in news
 // offers that name the brand (for brands whose site cannot be read).
+// Kept in A–Z order: the Brands menu lists them as written here.
 export const STORES = [
-  { id: "daraz", label: "Daraz", sourceName: "Daraz" },
-  { id: "othoba", label: "Othoba", sourceName: "Othoba" },
-  { id: "apex", label: "Apex", sourceName: "Apex" },
-  { id: "bata", label: "Bata", sourceName: "Bata" },
-  { id: "lotto", label: "Lotto", sourceName: "Lotto" },
   { id: "aarong", label: "Aarong", sourceName: "Aarong", names: ["Aarong", "আড়ং"] },
-  { id: "infinity", label: "Infinity", sourceName: "Infinity" },
+  { id: "aeroblue", label: "Aeroblue", sourceName: "Aeroblue" },
+  { id: "agora", label: "Agora", sourceName: "Agora" },
+  { id: "apex", label: "Apex", sourceName: "Apex" },
+  { id: "arogga", label: "Arogga", sourceName: "Arogga" },
+  { id: "bata", label: "Bata", sourceName: "Bata" },
+  { id: "daraz", label: "Daraz", sourceName: "Daraz" },
+  { id: "easy", label: "Easy", sourceName: "Easy" },
+  { id: "ecstasy", label: "Ecstasy", sourceName: "Ecstasy" },
   { id: "gentle-park", label: "Gentle Park", sourceName: "Gentle Park" },
+  { id: "illiyeen", label: "Illiyeen", sourceName: "Illiyeen" },
+  { id: "infinity", label: "Infinity", sourceName: "Infinity" },
+  { id: "le-reve", label: "Le Reve", sourceName: "Le Reve" },
+  { id: "lotto", label: "Lotto", sourceName: "Lotto" },
+  { id: "mens-world", label: "Mens World", sourceName: "Mens World" },
+  { id: "othoba", label: "Othoba", sourceName: "Othoba" },
   { id: "plus-point", label: "Plus Point", sourceName: "Plus Point" },
   { id: "richman", label: "Richman", sourceName: "Richman" },
-  { id: "le-reve", label: "Le Reve", sourceName: "Le Reve" },
-  { id: "ecstasy", label: "Ecstasy", sourceName: "Ecstasy" },
-  { id: "illiyeen", label: "Illiyeen", sourceName: "Illiyeen" },
-  { id: "mens-world", label: "Mens World", sourceName: "Mens World" },
-  { id: "yellow", label: "Yellow", sourceName: "Yellow" },
-  { id: "easy", label: "Easy", sourceName: "Easy" },
-  { id: "walker", label: "Walker", sourceName: "Walker" },
   { id: "shajgoj", label: "Shajgoj", sourceName: "Shajgoj" },
-  { id: "arogga", label: "Arogga", sourceName: "Arogga" },
   { id: "shwapno", label: "Shwapno", sourceName: "Shwapno" },
-  { id: "agora", label: "Agora", sourceName: "Agora" },
+  { id: "walkar", label: "Walkar", sourceName: "Walkar", names: ["Walkar", "ওয়াকার"] },
+  { id: "yellow", label: "Yellow", sourceName: "Yellow" },
 ];
 export const STORE_IDS = STORES.map((s) => s.id);
 

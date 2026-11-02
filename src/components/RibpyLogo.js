@@ -12,7 +12,7 @@ export default function RibpyLogo({ className = "" }) {
       aria-label="RiBpy on GitHub"
       className={`ribpy-logo group inline-flex items-center gap-2 ${className}`}
     >
-      <span className="ribpy-mark relative grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-600 shadow-md shadow-teal-600/30 ring-1 ring-white/20">
+      <span className="ribpy-mark relative grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-gradient-to-br from-brand-500 via-brand-accent-light to-sky-600 shadow-md shadow-brand-accent/30 ring-1 ring-white/20">
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M7 20V4h6a4.5 4.5 0 0 1 0 9H7" stroke="white" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M12.5 13 18 20" stroke="white" strokeWidth="2.6" strokeLinecap="round" />
@@ -20,7 +20,7 @@ export default function RibpyLogo({ className = "" }) {
         </svg>
       </span>
       <span className="text-[15px] font-bold tracking-tight text-slate-900">
-        Ri<span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-sky-500 bg-clip-text text-transparent">Bpy</span>
+        Ri<span className="bg-gradient-to-r from-brand-ink via-brand-ink-accent to-sky-500 bg-clip-text text-transparent">Bpy</span>
       </span>
     </a>
   );

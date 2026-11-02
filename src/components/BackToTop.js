@@ -45,7 +45,7 @@ export default function BackToTop() {
       title="Back to top"
       tabIndex={visible ? 0 : -1}
       aria-hidden={!visible}
-      className={`back-to-top group fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-600/30 sm:bottom-6 sm:right-6 ${
+      className={`back-to-top group fixed bottom-20 right-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-accent text-white shadow-lg shadow-brand-600/30 sm:bottom-6 sm:right-6 ${
         visible ? "is-visible" : ""
       }`}
     >

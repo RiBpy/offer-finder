@@ -37,7 +37,7 @@ export default function HeaderShell({ children, spacerClassName = "h-[68px]" }) 
           scrolled ? "border-slate-200 bg-white/80 shadow-lg shadow-black/5" : "border-transparent bg-white/60"
         }`}
       >
-        <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-emerald-500 via-teal-400 to-sky-500" />
+        <div aria-hidden="true" className="h-[3px] bg-gradient-to-r from-brand-500 via-brand-accent-light to-sky-500" />
         {children}
       </header>
       <div aria-hidden="true" className={height == null ? spacerClassName : undefined} style={height == null ? undefined : { height }} />

@@ -21,12 +21,12 @@ export async function adminFetch(url, { method = "GET", body } = {}) {
 }
 
 export const STATUS_STYLES = {
-  active: "bg-emerald-100 text-emerald-800",
+  active: "bg-brand-100 text-brand-ink-strong",
   unverified: "bg-amber-100 text-amber-800",
   expired: "bg-slate-200 text-slate-700",
   unavailable: "bg-red-100 text-red-800",
   pending: "bg-sky-100 text-sky-800",
-  approved: "bg-emerald-50 text-emerald-700",
+  approved: "bg-brand-50 text-brand-ink",
   rejected: "bg-red-50 text-red-700",
 };
 

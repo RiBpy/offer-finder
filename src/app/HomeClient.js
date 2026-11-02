@@ -314,10 +314,10 @@ export default function HomeClient() {
             <button
               type="button"
               onClick={() => setPickerOpen(true)}
-              className="group flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-md border border-slate-200 bg-white pl-1.5 pr-3 text-sm transition hover:border-emerald-600/60 hover:bg-emerald-50/40 focus-visible:border-emerald-600 active:scale-[0.99] sm:max-w-xs sm:flex-none"
+              className="group flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-md border border-slate-200 bg-white pl-1.5 pr-3 text-sm transition hover:border-brand-600/60 hover:bg-brand-50/40 focus-visible:border-brand-600 active:scale-[0.99] sm:max-w-xs sm:flex-none"
               aria-label={`Change location. Current: ${location?.label || "not set"}`}
             >
-              <span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded bg-emerald-600 text-white transition-colors group-hover:bg-emerald-700">
+              <span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded bg-brand-600 text-white transition-colors group-hover:bg-brand-700">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" />
                   <circle cx="12" cy="9.5" r="2.5" />
@@ -335,7 +335,7 @@ export default function HomeClient() {
           <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto sm:gap-3">
             <form role="search" onSubmit={(e) => e.preventDefault()} className="group/search relative min-w-0 flex-1 sm:w-80 sm:flex-none">
               <label htmlFor="q" className="sr-only">Search offers</label>
-              <svg aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within/search:text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within/search:text-brand-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.5-3.5" />
               </svg>
@@ -345,7 +345,7 @@ export default function HomeClient() {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Search offers, brands, shops…"
-                className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="h-10 w-full rounded-md border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-600 focus:bg-white focus:ring-2 focus:ring-brand-100"
               />
             </form>
             <ThemeToggle />
@@ -392,14 +392,14 @@ export default function HomeClient() {
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-emerald-600/50 active:scale-95 lg:hidden"
+                className="flex shrink-0 items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-brand-600/50 active:scale-95 lg:hidden"
               >
                 <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 6h16M7 12h10M10 18h4" />
                 </svg>
                 Filters
                 {activeFilterCount(filters) > 0 && (
-                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-emerald-700 px-1.5 text-xs text-white">{activeFilterCount(filters)}</span>
+                  <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand-700 px-1.5 text-xs text-white">{activeFilterCount(filters)}</span>
                 )}
               </button>
               <ActiveFilters filters={filters} setFilters={setFilters} />
@@ -422,13 +422,13 @@ export default function HomeClient() {
                 <h2 className="text-lg font-semibold text-slate-900">{feedTitle}</h2>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   {discovery.status === "checking" && (
-                    <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
-                      <span className="live-dot h-1.5 w-1.5 rounded-full bg-emerald-600" aria-hidden="true" />
+                    <span className="flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-ink-strong" role="status">
+                      <span className="live-dot h-1.5 w-1.5 rounded-full bg-brand-600" aria-hidden="true" />
                       Checking for new offers…
                     </span>
                   )}
                   {discovery.status === "done" && discovery.found > 0 && (
-                    <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800" role="status">
+                    <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-ink-strong" role="status">
                       ✓ {discovery.found} new {discovery.found === 1 ? "offer" : "offers"} found
                     </span>
                   )}
