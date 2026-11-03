@@ -39,9 +39,6 @@ export const SEARCHES = [
   "ডিসকাউন্ট",
   "মূল্যছাড়",
   "ক্যাশব্যাক অফার",
-  // City Bank lists its offers only in a JavaScript app, so they are found through news.
-  "City Bank Amex offer",
-  "City Bank American Express discount",
   "IFIC Bank card offer",
   // kfcbd.com disallows all crawlers in robots.txt, so KFC deals come from news.
   "KFC Bangladesh offer",
