@@ -98,15 +98,14 @@ export function sourceTypeLabel(id) {
 
 // Card-offer filter. An offer belongs to a bank when it came from the bank's own
 // site (`sourceName` matches the site name in discovery/config.js) or its title
-// names the bank, as news-sourced offers do ("… with City Bank Amex cards").
+// names the bank, as news-sourced offers do ("… with BRAC Bank cards").
+// City Bank is left out: its offers are only in a JavaScript app
+// (americanexpress.com/en-bd), so we cannot show them.
 // The order here is also the order bank offers are listed in (query.js).
 export const BANKS = [
   { id: "ebl", label: "EBL", sourceName: "EBL", names: ["EBL", "Eastern Bank"] },
   { id: "mbl", label: "Mercantile Bank", sourceName: "Mercantile Bank", names: ["Mercantile Bank", "MBL"] },
   { id: "ific", label: "IFIC Bank", sourceName: "IFIC Bank", names: ["IFIC"] },
-  // City Bank's offer list is a JavaScript app (americanexpress.com/en-bd), so its
-  // offers come from news; in Bangladesh, Amex cards are issued only by City Bank.
-  { id: "city", label: "City Bank", sourceName: "City Bank", names: ["City Bank", "Amex", "American Express"] },
   { id: "brac", label: "BRAC Bank", sourceName: "BRAC Bank", names: ["BRAC Bank"] },
   { id: "mtb", label: "MTB", sourceName: "Mutual Trust Bank", names: ["MTB", "Mutual Trust Bank"] },
 ];
