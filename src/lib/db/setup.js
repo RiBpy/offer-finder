@@ -7,6 +7,7 @@ import {
   SOURCE_TYPE_IDS,
   VALIDATION_STATUSES,
 } from "../constants.js";
+import { LEARNING_TTL_DAYS } from "../discovery/learning.js";
 
 const nullable = (bsonType) => ({ bsonType: [bsonType, "null"] });
 
@@ -133,6 +134,7 @@ export async function ensureCollections(db) {
   await ensureCollection(db, "discovery_items");
   await ensureCollection(db, "geocache");
   await ensureCollection(db, "discovery_state");
+  await ensureCollection(db, "learning_samples");
 
   const offers = db.collection("offers");
   await offers.createIndexes([
@@ -168,5 +170,10 @@ export async function ensureCollections(db) {
   await db.collection("discovery_items").createIndexes([
     { key: { status: 1, priority: -1, foundAt: 1 }, name: "queue" },
     { key: { foundAt: 1 }, name: "found_ttl", expireAfterSeconds: 120 * 24 * 3600 },
+  ]);
+  // Learning data for the future rule-based reader (discovery/learning.js).
+  await db.collection("learning_samples").createIndexes([
+    { key: { sourceName: 1, createdAt: -1 }, name: "source_created" },
+    { key: { createdAt: 1 }, name: "created_ttl", expireAfterSeconds: LEARNING_TTL_DAYS * 24 * 3600 },
   ]);
 }

@@ -17,6 +17,7 @@ import { publishExtracted } from "./publish.js";
 import { fetchEblPartner } from "./ebl.js";
 import { fetchIficOffer } from "./ific.js";
 import { fetchDarazCampaign } from "./daraz.js";
+import { saveLearningSample } from "./learning.js";
 
 // Site-specific readers for items whose offer is not a page of its own.
 const ADAPTER_READERS = { ebl: fetchEblPartner, ific: fetchIficOffer, daraz: fetchDarazCampaign };
@@ -188,6 +189,7 @@ async function processItem(db, item, now) {
     note: item.note,
     images: page.images,
   });
+  if (!refused) await saveLearningSample(db, { item, page, offers, model, now });
 
   const outcomes = [];
   for (const found of offers) {
