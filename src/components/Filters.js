@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AUDIENCES, BANKS, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, STORES, VALIDITY_MODES } from "@/lib/constants";
+import { AUDIENCES, BANKS, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, STORE_GROUPS, STORES, VALIDITY_MODES } from "@/lib/constants";
 
 export const DEFAULT_FILTERS = {
   q: "",
@@ -255,15 +255,16 @@ function SectionLabel({ children }) {
 export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, onPick = () => {} }) {
   const [open, setOpen] = useState(() => new Set());
   // Open the groups holding the current choice (also when it comes from the address bar).
-  const { audience, category, brandOnly, store, bank } = filters;
+  const { audience, category, store, bank } = filters;
+  const storeGroup = STORES.find((s) => s.id === store)?.group;
   useEffect(() => {
     const ids = [];
     const group = SHOP_FOR.find((g) => (g.audience ? g.audience === audience : !audience && g.items.some(([c]) => c === category)));
     if (group) ids.push(group.id);
-    if (brandOnly || store) ids.push("brands");
+    if (storeGroup) ids.push("brands", `brands-${storeGroup}`);
     if (bank) ids.push("banks");
     if (ids.length) setOpen((s) => (ids.every((id) => s.has(id)) ? s : new Set([...s, ...ids])));
-  }, [audience, category, brandOnly, store, bank]);
+  }, [audience, category, storeGroup, bank]);
   const toggle = (id) => setOpen((s) => new Set(s.has(id) ? [...s].filter((x) => x !== id) : [...s, id]));
   const apply = (patch) => {
     setFilters((f) => ({ ...f, ...patch }));
@@ -321,11 +322,16 @@ export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, on
       ))}
 
       <SectionLabel>Brands &amp; banks</SectionLabel>
-      <Accordion id="brands" icon="🏷️" label="Brands" open={open.has("brands")} onToggle={() => toggle("brands")} active={filters.brandOnly || Boolean(filters.store)}>
-        {STORES.map((s) => (
-          <Item key={s.id} indent active={filters.store === s.id} count={counts?.stores?.[s.id]} onClick={() => pick({ store: s.id }, filters.store === s.id)}>
-            {s.label}
-          </Item>
+      {/* Brands open to their groups (Clothing, Shoes & bags…), and each group to its brands. */}
+      <Accordion id="brands" icon="🏷️" label="Brands" open={open.has("brands")} onToggle={() => toggle("brands")} active={Boolean(storeGroup)}>
+        {STORE_GROUPS.map((g) => (
+          <Accordion key={g.id} id={`brands-${g.id}`} icon={g.icon} label={g.label} open={open.has(`brands-${g.id}`)} onToggle={() => toggle(`brands-${g.id}`)} active={storeGroup === g.id}>
+            {STORES.filter((s) => s.group === g.id).map((s) => (
+              <Item key={s.id} indent active={filters.store === s.id} count={counts?.stores?.[s.id]} onClick={() => pick({ store: s.id }, filters.store === s.id)}>
+                {s.label}
+              </Item>
+            ))}
+          </Accordion>
         ))}
       </Accordion>
       <Accordion id="banks" icon="💳" label="Bank card offers" open={open.has("banks")} onToggle={() => toggle("banks")} active={Boolean(filters.bank)}>
