@@ -52,6 +52,9 @@ export const SEARCHES = [
   // Walkar (PRAN-RFL footwear) has no online shop to read; its sales come from news.
   "Walkar discount",
   "Walkar footwear offer",
+  // rang-bd.com and deshal.net build their pages with JavaScript, so their sales come from news.
+  "Rang Bangladesh discount",
+  "Deshal discount offer",
 ];
 
 // Bangla searches mostly return Indian (West Bengal) outlets writing about
@@ -202,8 +205,9 @@ export const SITES = [
     category: "bags",
     recheckDays: 3,
   },
-  // Clothing brands. Aarong (aarong.com) and Sailor (sailor.clothing) build
-  // their pages with JavaScript, and Cats Eye (catseye.com.bd) is behind a bot
+  // Clothing brands. Aarong (aarong.com), Sailor (sailor.clothing), Rang
+  // (rang-bd.com) and Deshal (deshal.net) build their pages with JavaScript, and
+  // Cats Eye (catseye.com.bd) and Sara (saralifestyle.com) are behind a bot
   // check, so they cannot be read.
   {
     // Infinity Mega Mall's sale list (Richman and the other house brands).
@@ -287,6 +291,53 @@ export const SITES = [
     name: "Plus Point",
     pages: ["https://pluspoint.com.bd/collections/discount-corner"],
     note: `${SHOP_SALE_NOTE} Plus Point sells menswear, so set audience to men. If no item on the page is discounted, or every discounted item is sold out, return no offer.`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    name: "Kay Kraft",
+    pages: ["https://www.kaykraft.com/product-category/sale/"],
+    note: `${SHOP_SALE_NOTE} Title it with Kay Kraft. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Anjan's sale list (OpenCart's "specials" page).
+    name: "Anjan's",
+    pages: ["https://anjans.com/index.php?route=product/special"],
+    note: `${SHOP_SALE_NOTE} Title it with Anjan's. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Twelve's home page carries its store-wide sale banner (e.g. "Super Sale 40% off").
+    name: "Twelve",
+    pages: ["https://twelvebd.com/"],
+    note: `Twelve Clothing sells clothing for men, women and kids. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // No sale collection; a sale shows on its home page.
+    name: "Dorjibari",
+    pages: ["https://dorjibari.com.bd/"],
+    note: `Dorjibari sells menswear, so set audience to men. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // The sale linked from Lubnan's menu; its address names the sale, so it may change.
+    name: "Lubnan",
+    pages: ["https://lubnanbd.com/product-category/flat-50-sale/"],
+    note: `${SHOP_SALE_NOTE} Title it with Lubnan. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Fit Elegance (suits and formal wear) lists its offers here.
+    name: "Fit Elegance",
+    pages: ["https://fitelegance.com/category/offer/"],
+    note: `${SHOP_SALE_NOTE} Title it with Fit Elegance. It sells menswear, so set audience to men. If no item on the page is discounted, return no offer.`,
     category: "fashion",
     recheckDays: 3,
   },
