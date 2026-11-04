@@ -26,21 +26,28 @@ function LogoMark({ className }) {
 
 /**
  * Stands in for an offer without a picture (or whose picture failed to load):
- * our logo, who the offer is from, and what kind of offer it is.
+ * our logo, who the offer is from, and what kind of offer it is. On cards the
+ * logo and name share one line, kept clear of the discount badge (bottom) and
+ * the bookmark (top right); the card already shows the category below.
  */
 export function OfferPlaceholder({ offer, large = false }) {
   const name = offer.businessName || offer.brandName || offer.sourceName;
   const category = CATEGORIES.find((c) => c.id === offer.primaryCategory);
+  const label = [name, categoryLabel(offer.primaryCategory), "offer"].filter(Boolean).join(" ");
+  if (!large) {
+    return (
+      <div role="img" aria-label={label} className="offer-placeholder absolute inset-0 flex items-center justify-center gap-2 px-11 pb-9 pt-2">
+        <LogoMark className="h-9 w-9 shrink-0" />
+        {name && <p className="min-w-0 truncate text-sm font-bold tracking-tight text-slate-800">{name}</p>}
+      </div>
+    );
+  }
   return (
-    <div
-      role="img"
-      aria-label={[name, categoryLabel(offer.primaryCategory), "offer"].filter(Boolean).join(" ")}
-      className={`offer-placeholder absolute inset-0 flex flex-col items-center justify-center text-center ${large ? "gap-3 px-8" : "gap-1.5 px-4 pb-5"}`}
-    >
-      <LogoMark className={large ? "h-16 w-16" : "h-10 w-10"} />
-      {name && <p className={`max-w-full truncate font-bold tracking-tight text-slate-800 ${large ? "text-2xl" : "text-sm"}`}>{name}</p>}
+    <div role="img" aria-label={label} className="offer-placeholder absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-center">
+      <LogoMark className="h-16 w-16" />
+      {name && <p className="max-w-full truncate text-2xl font-bold tracking-tight text-slate-800">{name}</p>}
       {category && (
-        <p className={`inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 font-medium text-brand-ink-strong ${large ? "text-sm" : "text-[11px]"}`}>
+        <p className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-sm font-medium text-brand-ink-strong">
           <span aria-hidden="true">{category.icon}</span>
           {category.label}
         </p>
