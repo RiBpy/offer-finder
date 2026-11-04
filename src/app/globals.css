@@ -1,23 +1,10 @@
 @import "tailwindcss";
 
-/* ============================================================================
-   BRAND COLOURS: the site has two, one per theme. Change them here, and only
-   here; everything brand-coloured follows (buttons, badges, links, discount
-   tags, hover and focus states, header and footer accents, logo, loader,
-   picture placeholder). Two files can't read CSS and keep their own copy of
-   the light-mode colour: src/app/icon.svg (favicon) and themeColor in
-   src/app/layout.js.
-   ========================================================================= */
 :root {
   --brand-light-mode: #1b365d; /* navy */
   --brand-dark-mode: #059669; /* green */
 }
 
-/* Everything below is worked out from the two colours above: no need to edit it.
-   --brand is the current theme's colour. --brand-700 is the brand itself;
-   lower numbers are paler tints (backgrounds, hovers), higher ones deeper
-   shades; --brand-accent is the lighter end of gradients; --brand-ink is
-   brand-coloured text, which turns light in the dark theme to stay readable. */
 :root {
   --brand: var(--brand-light-mode);
   --brand-tint-base: #fff; /* what pale tints are mixed into */
