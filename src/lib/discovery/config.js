@@ -55,6 +55,9 @@ export const SEARCHES = [
   "Jennys shoes offer",
   "Akij Footwear offer",
   "Fortune Shoes offer",
+  // Clothing brands behind a bot check (Sara, Cats Eye), so they come from news.
+  "Sara Lifestyle discount",
+  "Cats Eye discount offer",
   // bkash.com is behind a bot check, so bKash offers come from news (and shop pages).
   "bKash cashback offer",
   "bKash discount",
@@ -240,7 +243,23 @@ export const SITES = [
   // Clothing brands. Aarong (aarong.com), Sailor (sailor.clothing), Rang
   // (rang-bd.com) and Deshal (deshal.net) build their pages with JavaScript, and
   // Cats Eye (catseye.com.bd) and Sara (saralifestyle.com) are behind a bot
-  // check, so they cannot be read.
+  // check, so they cannot be read (news searches above cover them).
+  {
+    // Comfystyle's home page carries its store-wide sale banner (e.g. clearance up to 50% off).
+    name: "Comfystyle",
+    pages: ["https://comfystyle.com.bd/"],
+    note: `Comfystyle sells clothing for men, women and kids. ${HOME_SALE_NOTE}`,
+    category: "fashion",
+    recheckDays: 3,
+  },
+  {
+    // Live Shopping's flash sale list (clothing, with outlets in Dhaka and Sylhet).
+    name: "Live Shopping",
+    pages: ["https://liveshopping.com.bd/product-type/flash-sales"],
+    note: `${SHOP_SALE_NOTE} Title it with Live Shopping. If no product on the page is discounted, return no offer. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "fashion",
+    recheckDays: 3,
+  },
   {
     // Infinity Mega Mall's sale list (Richman and the other house brands).
     name: "Infinity",
