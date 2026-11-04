@@ -193,7 +193,8 @@ function validityFilter(p) {
   }
 }
 
-const bankNamesRegex = (bank) => `\\b(${bank.names.map(escapeRegex).join("|")})\\b`;
+// Whole words only (MTB, not "MTBx"), except Bangla names: \b does not work next to Bangla letters.
+const bankNamesRegex = (bank) => bank.names.map((n) => (/^[\x20-\x7e]+$/.test(n) ? `\\b${escapeRegex(n)}\\b` : escapeRegex(n))).join("|");
 
 // A brand's offers: from its own site, or (for brands with `names`) news
 // offers naming it. No \b: it does not work next to Bangla letters.
@@ -221,9 +222,11 @@ const BANK_RANK = {
 };
 
 // Brand Offers: deals a business runs itself (shops, brands, hotels), as
-// opposed to bank card discounts at a merchant.
-const BANK_SOURCE_NAMES = BANKS.map((b) => b.sourceName);
-const BANK_TITLE = new RegExp(BANKS.map(bankNamesRegex).join("|"), "i");
+// opposed to bank card discounts at a merchant. A shop's own bKash cashback
+// stays a brand offer (it also shows under bKash).
+const CARD_BANKS = BANKS.filter((b) => b.group === "bank");
+const BANK_SOURCE_NAMES = CARD_BANKS.map((b) => b.sourceName);
+const BANK_TITLE = new RegExp(CARD_BANKS.map(bankNamesRegex).join("|"), "i");
 const BRAND_FILTER = {
   sourceName: { $nin: BANK_SOURCE_NAMES },
   title: { $not: BANK_TITLE },

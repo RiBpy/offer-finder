@@ -49,6 +49,9 @@ export const SEARCHES = [
   // Walkar (PRAN-RFL footwear) has no online shop to read; its sales come from news.
   "Walkar discount",
   "Walkar footwear offer",
+  // bkash.com is behind a bot check, so bKash offers come from news (and shop pages).
+  "bKash cashback offer",
+  "bKash discount",
   // rang-bd.com and deshal.net build their pages with JavaScript, so their sales come from news.
   "Rang Bangladesh discount",
   "Deshal discount offer",
