@@ -49,6 +49,12 @@ export const SEARCHES = [
   // Walkar (PRAN-RFL footwear) has no online shop to read; its sales come from news.
   "Walkar discount",
   "Walkar footwear offer",
+  // Shoe brands without a shop to read: Bay (no website found), Jennys and Akij
+  // Footwear (export makers' sites), Fortune (robots.txt disallows crawling).
+  "Bay Emporium shoes discount",
+  "Jennys shoes offer",
+  "Akij Footwear offer",
+  "Fortune Shoes offer",
   // bkash.com is behind a bot check, so bKash offers come from news (and shop pages).
   "bKash cashback offer",
   "bKash discount",
@@ -188,6 +194,21 @@ export const SITES = [
     name: "Lotto",
     pages: ["https://www.lottobd.com/collections/hot-deals"],
     note: SHOP_SALE_NOTE,
+    category: "footwear",
+    recheckDays: 3,
+  },
+  {
+    name: "Step",
+    pages: ["https://stepfootwear.com/special/discounts"],
+    note: `${SHOP_SALE_NOTE} Title it with Step Footwear. Set audience only if every discounted item is for one group (men, women or kids).`,
+    category: "footwear",
+    recheckDays: 3,
+  },
+  {
+    // Orion Footwear has no sale list; a sale shows on its home page.
+    name: "Orion",
+    pages: ["https://orionfootwearltd.com/"],
+    note: `Orion Footwear sells shoes for men, women and kids. ${HOME_SALE_NOTE}`,
     category: "footwear",
     recheckDays: 3,
   },
