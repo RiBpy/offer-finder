@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AUDIENCES, BANKS, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, STORE_GROUPS, STORES, VALIDITY_MODES } from "@/lib/constants";
+import { AUDIENCES, BANK_GROUPS, BANKS, bankOffersLabel, CATEGORIES, RADIUS_OPTIONS, SORTS, SOURCE_TYPES, STORE_GROUPS, STORES, VALIDITY_MODES } from "@/lib/constants";
 
 export const DEFAULT_FILTERS = {
   q: "",
@@ -145,7 +145,7 @@ export function describeFilters(f) {
     group ? (sub ? `${group.label} · ${sub}` : group.allLabel.replace(/^All (\w)/, (_, c) => c.toUpperCase())) : categoryOf(f.category)?.label,
     f.brandOnly && !f.store && "Brand offers",
     STORES.find((s) => s.id === f.store)?.label,
-    BANKS.find((b) => b.id === f.bank) && `${BANKS.find((b) => b.id === f.bank).label} card offers`,
+    BANKS.find((b) => b.id === f.bank) && bankOffersLabel(BANKS.find((b) => b.id === f.bank)),
     f.q && `“${f.q}”`,
   ].filter(Boolean);
   return parts.join(" · ");
@@ -257,14 +257,15 @@ export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, on
   // Open the groups holding the current choice (also when it comes from the address bar).
   const { audience, category, store, bank } = filters;
   const storeGroup = STORES.find((s) => s.id === store)?.group;
+  const bankGroup = BANKS.find((b) => b.id === bank)?.group;
   useEffect(() => {
     const ids = [];
     const group = SHOP_FOR.find((g) => (g.audience ? g.audience === audience : !audience && g.items.some(([c]) => c === category)));
     if (group) ids.push(group.id);
     if (storeGroup) ids.push("brands", `brands-${storeGroup}`);
-    if (bank) ids.push("banks");
+    if (bankGroup) ids.push("banks", `banks-${bankGroup}`);
     if (ids.length) setOpen((s) => (ids.every((id) => s.has(id)) ? s : new Set([...s, ...ids])));
-  }, [audience, category, storeGroup, bank]);
+  }, [audience, category, storeGroup, bankGroup]);
   const toggle = (id) => setOpen((s) => new Set(s.has(id) ? [...s].filter((x) => x !== id) : [...s, id]));
   const apply = (patch) => {
     setFilters((f) => ({ ...f, ...patch }));
@@ -334,11 +335,16 @@ export function FilterMenu({ filters, setFilters, counts, hasCoords, hasCity, on
           </Accordion>
         ))}
       </Accordion>
-      <Accordion id="banks" icon="💳" label="Bank card offers" open={open.has("banks")} onToggle={() => toggle("banks")} active={Boolean(filters.bank)}>
-        {BANKS.map((b) => (
-          <Item key={b.id} indent active={filters.bank === b.id} count={counts?.banks?.[b.id]} onClick={() => pick({ bank: b.id }, filters.bank === b.id)}>
-            {b.label}
-          </Item>
+      {/* Bank & card offers open to Bank and MFS (mobile wallets), and each to its names. */}
+      <Accordion id="banks" icon="💳" label="Bank & card offers" open={open.has("banks")} onToggle={() => toggle("banks")} active={Boolean(bankGroup)}>
+        {BANK_GROUPS.map((g) => (
+          <Accordion key={g.id} id={`banks-${g.id}`} icon={g.icon} label={g.label} open={open.has(`banks-${g.id}`)} onToggle={() => toggle(`banks-${g.id}`)} active={bankGroup === g.id}>
+            {BANKS.filter((b) => b.group === g.id).map((b) => (
+              <Item key={b.id} indent active={filters.bank === b.id} count={counts?.banks?.[b.id]} onClick={() => pick({ bank: b.id }, filters.bank === b.id)}>
+                {b.label}
+              </Item>
+            ))}
+          </Accordion>
         ))}
       </Accordion>
 
@@ -424,7 +430,8 @@ export function ActiveFilters({ filters, setFilters }) {
   if (name) tags.push([name, { audience: "", category: "" }]);
   if (filters.store) tags.push([STORES.find((s) => s.id === filters.store)?.label, { store: "" }]);
   else if (filters.brandOnly) tags.push(["Brand offers", { brandOnly: false }]);
-  if (filters.bank) tags.push([`${BANKS.find((b) => b.id === filters.bank)?.label} cards`, { bank: "" }]);
+  const tagBank = BANKS.find((b) => b.id === filters.bank);
+  if (tagBank) tags.push([tagBank.group === "bank" ? `${tagBank.label} cards` : tagBank.label, { bank: "" }]);
   if (filters.minDiscount) tags.push([`${filters.minDiscount}%+ off`, { minDiscount: "" }]);
   if (filters.sourceType) tags.push([SOURCE_TYPES.find((s) => s.id === filters.sourceType)?.label, { sourceType: "" }]);
   if (filters.availability !== "any") tags.push([{ in_store: "In-store", online: "Available online", online_only: "Online only" }[filters.availability], { availability: "any" }]);

@@ -96,20 +96,33 @@ export function sourceTypeLabel(id) {
   return SOURCE_TYPES.find((s) => s.id === id)?.label ?? id;
 }
 
-// Card-offer filter. An offer belongs to a bank when it came from the bank's own
-// site (`sourceName` matches the site name in discovery/config.js) or its title
-// names the bank, as news-sourced offers do ("… with BRAC Bank cards").
+// Bank and card offers filter: banks' card offers and mobile wallets (MFS).
+// An offer belongs to one when it came from its own site (`sourceName` matches
+// the site name in discovery/config.js) or its title names it, as news-sourced
+// offers and shop pages do ("… with BRAC Bank cards", "bKash cashback").
 // City Bank is left out: its offers are only in a JavaScript app
-// (americanexpress.com/en-bd), so we cannot show them.
-// The order here is also the order bank offers are listed in (query.js).
+// (americanexpress.com/en-bd), so we cannot show them. bKash's site is behind a
+// bot check, so its offers come from news and shop pages.
+// The order here is also the order these offers are listed in (query.js).
 export const BANKS = [
-  { id: "ebl", label: "EBL", sourceName: "EBL", names: ["EBL", "Eastern Bank"] },
-  { id: "mbl", label: "Mercantile Bank", sourceName: "Mercantile Bank", names: ["Mercantile Bank", "MBL"] },
-  { id: "ific", label: "IFIC Bank", sourceName: "IFIC Bank", names: ["IFIC"] },
-  { id: "brac", label: "BRAC Bank", sourceName: "BRAC Bank", names: ["BRAC Bank"] },
-  { id: "mtb", label: "MTB", sourceName: "Mutual Trust Bank", names: ["MTB", "Mutual Trust Bank"] },
+  { id: "ebl", label: "EBL", group: "bank", sourceName: "EBL", names: ["EBL", "Eastern Bank"] },
+  { id: "mbl", label: "Mercantile Bank", group: "bank", sourceName: "Mercantile Bank", names: ["Mercantile Bank", "MBL"] },
+  { id: "ific", label: "IFIC Bank", group: "bank", sourceName: "IFIC Bank", names: ["IFIC"] },
+  { id: "brac", label: "BRAC Bank", group: "bank", sourceName: "BRAC Bank", names: ["BRAC Bank"] },
+  { id: "bank-asia", label: "Bank Asia", group: "bank", sourceName: "Bank Asia", names: ["Bank Asia"] },
+  { id: "mtb", label: "MTB", group: "bank", sourceName: "Mutual Trust Bank", names: ["MTB", "Mutual Trust Bank"] },
+  { id: "bkash", label: "bKash", group: "mfs", sourceName: "bKash", names: ["bKash", "বিকাশ"] },
 ];
 export const BANK_IDS = BANKS.map((b) => b.id);
+
+// The Bank & card offers menu's groups, in menu order.
+export const BANK_GROUPS = [
+  { id: "bank", label: "Bank", icon: "🏦" },
+  { id: "mfs", label: "MFS", icon: "📱" },
+];
+
+/** "EBL card offers", "bKash offers". */
+export const bankOffersLabel = (bank) => `${bank.label}${bank.group === "bank" ? " card" : ""} offers`;
 
 // online = online only, in_store = physical only, both = online and in store
 export const AVAILABILITY_TYPES = ["online", "in_store", "both"];
