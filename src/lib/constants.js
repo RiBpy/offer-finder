@@ -109,6 +109,7 @@ export const BANKS = [
   { id: "mbl", label: "Mercantile Bank", group: "bank", sourceName: "Mercantile Bank", names: ["Mercantile Bank", "MBL"] },
   { id: "ific", label: "IFIC Bank", group: "bank", sourceName: "IFIC Bank", names: ["IFIC"] },
   { id: "brac", label: "BRAC Bank", group: "bank", sourceName: "BRAC Bank", names: ["BRAC Bank"] },
+  { id: "bank-asia", label: "Bank Asia", group: "bank", sourceName: "Bank Asia", names: ["Bank Asia"] },
   { id: "mtb", label: "MTB", group: "bank", sourceName: "Mutual Trust Bank", names: ["MTB", "Mutual Trust Bank"] },
   { id: "bkash", label: "bKash", group: "mfs", sourceName: "bKash", names: ["bKash", "বিকাশ"] },
 ];

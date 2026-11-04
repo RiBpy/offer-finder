@@ -118,6 +118,17 @@ export const SITES = [
     sitemapPattern: /^\/privilege-partners\/[a-z0-9-]+\/?$/,
   },
   {
+    // Partners by category (restaurants, hotels, fashion…), up to about 13 a
+    // page. Each partner's details open in a popup loaded with a form post, so
+    // only the name and discount on the category page are read.
+    name: "Bank Asia",
+    url: "https://www.bankasia-bd.com/partners",
+    linkPattern: /^\/partners\/offers\/[a-z0-9-]+$/,
+    title: "Bank Asia card discount partners",
+    note: "This Bank Asia page lists its card discount partners in one category, each with its discount (e.g. '10% Discount Ambrosia Restaurant'). Return one offer per partner, titled like '10% off at Ambrosia Restaurant with Bank Asia cards', with businessName set to the partner. The discounts apply to all Bank Asia cards. Ignore the site's menus and footer.",
+    recheckDays: 7,
+  },
+  {
     // Partner details load with a form post, so a dedicated reader handles them.
     name: "EBL",
     url: "https://www.ebl.com.bd/retail/ebl-discount-partners",
